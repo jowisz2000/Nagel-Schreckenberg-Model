@@ -1,4 +1,4 @@
-module com.example.bachelor {
+module com.example.implementation {
     requires javafx.controls;
     requires javafx.fxml;
 
