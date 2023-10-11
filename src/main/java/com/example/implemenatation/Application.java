@@ -47,9 +47,12 @@ public class Application extends javafx.application.Application {
 
         Controller.onRoadSquareClick(stage);
         ((Rectangle) group.getChildren().get(5)).setFill(Color.RED);
+        ((Rectangle) group.getChildren().get(nodesInColumn*(nodesInRow-1)+5)).setFill(Color.RED);
 
-        Text startPointText = new Text(40, 280, "Start point");
+        Text startPointText = new Text(40, 275, "Start point");
         group.getChildren().add(startPointText);
+        Text endPointText = new Text(870, 275, "End point");
+        group.getChildren().add(endPointText);
 
         Slider probabilityOfStopSlider = initializeSlider();
 
