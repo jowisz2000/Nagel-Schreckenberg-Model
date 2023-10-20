@@ -2,6 +2,7 @@ package com.example.implemenatation;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -49,32 +50,130 @@ public class Controller {
                 return;
             }
 
+            if(numberOfNeighbours((int)row, (int)column) == 0){
+                Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
+                noNeighboursAlert.setContentText("This cell has no neighbours! Please select one with neighbours.");
+                noNeighboursAlert.show();
+                return;
+            }
+
+            if(disableChoosing((int)row, (int)column)){
+                Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
+                noNeighboursAlert.setContentText("It is impossible to put road in this square");
+                noNeighboursAlert.show();
+                return;
+            }
+
 //            if user clicked the square then the square is coloured
             if(row % 1 < 1/(1+interval) && column % 1 < 1/(1+interval)){
-                System.out.println(((Rectangle) Application.group.getChildren().get(2)).getFill());
                 ((Rectangle) Application.group.getChildren().get(nodesInColumn*(int)row+(int)column)).setFill(Color.GREEN);
-                System.out.println(checkIfHasNeighbours((int)row, (int)column));
-
+//                System.out.println(numberOfNeighbours((int)row, (int)column));
             }
         });
     }
 
-    private static int checkIfHasNeighbours(int row, int column){
+    /** checks number of square placed on selected row and column */
+    private static int numberOfNeighbours(int row, int column){
+        int numberOfNeighbours = 4;
 
-        int numberOfNeighbours = 0;
 
-        for (int i=row-1; i<row+2; i++) {
-            for (int j = column - 1; j < column + 2; j++) {
-//                System.out.println(i+" "+j+" "+ ((Rectangle) Application.group.getChildren().get(i * nodesInColumn + j)).getFill());
-                    Rectangle rec = ((Rectangle) Application.group.getChildren().get(i * nodesInColumn + j));
-                    System.out.println("in loop "+rec.getFill().equals(Color.GREEN));
-                    if (!(i == row && j == column) && ((Rectangle) Application.group.getChildren().get(i * nodesInColumn + j)).getFill()==(Color.GREEN)) {
-                        System.out.println("in return"+rec.getFill().equals(Color.GREEN));
-                        numberOfNeighbours++;
-                    }
-                }
+//        check left neighbour
+        try {
+
+            if (((Rectangle) Application.group.getChildren().get(row * nodesInColumn + column - 1)).getFill() == Color.BLUE) {
+                numberOfNeighbours--;
             }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            numberOfNeighbours--;
+        }
+
+//        check right neighbour
+        try {
+            if (((Rectangle) Application.group.getChildren().get(row * nodesInColumn + column + 1)).getFill() == Color.BLUE) {
+                numberOfNeighbours--;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            numberOfNeighbours--;
+        }
+
+//        check lower neighbour
+        try {
+            if (((Rectangle) Application.group.getChildren().get((row - 1) * nodesInColumn + column)).getFill() == Color.BLUE) {
+                numberOfNeighbours--;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            numberOfNeighbours--;
+        }
+
+//        check upper neighbour
+        try {
+            if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInColumn + column)).getFill() == Color.BLUE) {
+                numberOfNeighbours--;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            numberOfNeighbours--;
+        }
+
         return numberOfNeighbours;
+    }
+
+    /** method that disables choosing square if it has 3 neighbours in the corner*/
+    private static boolean disableChoosing(int row, int column){
+        int numberOfNeighbours = 3;
+
+//        top right column
+        try {
+            if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInColumn + column)).getFill() != Color.BLUE
+                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInColumn + column+1)).getFill() != Color.BLUE
+                    &&((Rectangle) Application.group.getChildren().get((row) * nodesInColumn + column+1)).getFill() != Color.BLUE) {
+                return true;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            return false;
+        }
+
+//        top left column
+        try {
+            if (((Rectangle) Application.group.getChildren().get((row) * nodesInColumn + column+1)).getFill() != Color.BLUE
+                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInColumn + column-1)).getFill() != Color.BLUE
+                    &&((Rectangle) Application.group.getChildren().get((row + 1) * nodesInColumn + column-1)).getFill() != Color.BLUE) {
+                return true;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            return false;
+        }
+
+//        left down corner
+        try {
+            if (((Rectangle) Application.group.getChildren().get((row) * nodesInColumn + column-1)).getFill() != Color.BLUE
+                    && ((Rectangle) Application.group.getChildren().get((row-1) * nodesInColumn + column)).getFill() != Color.BLUE
+                    &&((Rectangle) Application.group.getChildren().get((row - 1) * nodesInColumn + column-1)).getFill() != Color.BLUE) {
+                return true;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            return false;
+        }
+
+        //        right down corner
+        try {
+            if (((Rectangle) Application.group.getChildren().get((row+1) * nodesInColumn + column)).getFill() != Color.BLUE
+                    && ((Rectangle) Application.group.getChildren().get((row+1) * nodesInColumn + column+1)).getFill() != Color.BLUE
+                    &&((Rectangle) Application.group.getChildren().get((row - 1) * nodesInColumn + column-1)).getFill() != Color.BLUE) {
+                return true;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            return false;
+        }
+
+        return false;
     }
 
     /** method that handles events from slider that sets probability of braking

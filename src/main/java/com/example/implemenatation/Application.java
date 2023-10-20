@@ -24,7 +24,7 @@ public class Application extends javafx.application.Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        stage.setMaximized(true);
+//        stage.setMaximized(true);
         stage.setTitle("Implementing Nagel–Schreckenberg model");
         stage.setScene(scene);
         stage.show();
