@@ -123,7 +123,6 @@ public class Controller {
 
     /** method that disables choosing square if it has 3 neighbours in the corner*/
     private static boolean disableChoosing(int row, int column){
-        int numberOfNeighbours = 3;
 
 //        top right column
         try {
