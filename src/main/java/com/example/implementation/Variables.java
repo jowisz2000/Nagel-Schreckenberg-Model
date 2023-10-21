@@ -1,4 +1,4 @@
-package com.example.implemenatation;
+package com.example.implementation;
 
 public class Variables {
     /**    side's length */

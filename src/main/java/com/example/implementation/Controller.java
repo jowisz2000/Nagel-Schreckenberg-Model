@@ -1,4 +1,4 @@
-package com.example.implemenatation;
+package com.example.implementation;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -15,8 +15,8 @@ import javafx.stage.Stage;
 import java.text.DecimalFormat;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.example.implemenatation.Application.scene;
-import static com.example.implemenatation.Variables.*;
+import static com.example.implementation.Application.scene;
+import static com.example.implementation.Variables.*;
 
 public class Controller {
     /**
@@ -45,10 +45,12 @@ public class Controller {
                 return;
             }
 
-//            it doesn't allow to choose road on start point
+//            it doesn't allow to choose road on end point
             if((int)row==nodesInRow-1 && (int)column ==5){
                 return;
             }
+
+            System.out.println(numberOfNeighbours((int)row, (int)column));
 
             if(numberOfNeighbours((int)row, (int)column) == 0){
                 Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
@@ -76,45 +78,59 @@ public class Controller {
     private static int numberOfNeighbours(int row, int column){
         int numberOfNeighbours = 4;
 
+        System.out.println("Coordinates:"+row+", "+column);
+
 
 //        check left neighbour
         try {
 
-            if (((Rectangle) Application.group.getChildren().get(row * nodesInColumn + column - 1)).getFill() == Color.BLUE) {
+            if (row>= nodesInRow || column-1>=nodesInColumn ||
+                    ((Rectangle) Application.group.getChildren().get(row * nodesInColumn + column - 1)).getFill() == Color.BLUE) {
+                System.out.println(row+" "+(column-1));
                 numberOfNeighbours--;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
+            System.out.println(row +"E"+(column-1));
             numberOfNeighbours--;
         }
 
 //        check right neighbour
         try {
-            if (((Rectangle) Application.group.getChildren().get(row * nodesInColumn + column + 1)).getFill() == Color.BLUE) {
+            if (row>= nodesInRow || column+1>=nodesInColumn ||
+                    ((Rectangle) Application.group.getChildren().get(row * nodesInColumn + column + 1)).getFill() == Color.BLUE) {
+                System.out.println(row+" "+(column+1));
                 numberOfNeighbours--;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
+            System.out.println(row+" "+(column+1));
             numberOfNeighbours--;
         }
 
 //        check lower neighbour
         try {
-            if (((Rectangle) Application.group.getChildren().get((row - 1) * nodesInColumn + column)).getFill() == Color.BLUE) {
+            if (row-1>= nodesInRow || column>=nodesInColumn ||
+                    ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInColumn + column)).getFill() == Color.BLUE) {
+                System.out.println((row-1)+" "+(column));
                 numberOfNeighbours--;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
+            System.out.println((row-1)+"E "+(column));
             numberOfNeighbours--;
         }
 
 //        check upper neighbour
         try {
-            if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInColumn + column)).getFill() == Color.BLUE) {
+            if (row+1>= nodesInRow || column>=nodesInColumn ||
+                    ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInColumn + column)).getFill() == Color.BLUE) {
+                System.out.println((row+1)+" "+(column));
                 numberOfNeighbours--;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
+            System.out.println((row+1)+"E "+(column));
             numberOfNeighbours--;
         }
 

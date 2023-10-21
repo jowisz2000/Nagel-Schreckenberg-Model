@@ -1,4 +1,4 @@
-package com.example.implemenatation;
+package com.example.implementation;
 
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -11,9 +11,21 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.example.implemenatation.Variables.*;
+import static com.example.implementation.Variables.*;
 
 public class Application extends javafx.application.Application {
+
+    public static class CustomRectangle extends Group {
+        private Rectangle rectangle;
+
+        public CustomRectangle(double x, double y, double width, double height, Color color) {
+            rectangle = new Rectangle(x, y, width, height);
+            rectangle.setFill(color);
+            getChildren().add(rectangle);
+        }
+    }
+
+
     /** group that keeps all elements from interface */
     static Group group = new Group();
     /** scene on which all elements are placed */
@@ -38,9 +50,12 @@ public class Application extends javafx.application.Application {
                 Rectangle rectangle = new Rectangle(leftMargin + (1+interval) * sizeOfSquare * i,
                         upperMargin + (1+interval) * sizeOfSquare * j, sizeOfSquare, sizeOfSquare);
                 rectangle.setFill(Color.BLUE);
-                group.getChildren().add(rectangle);
+
+                Square square = new Square(rectangle);
+//                group.getChildren().add(rectangle);
             }
         }
+
 
         Controller.onRoadSquareClick(stage);
         ((Rectangle) group.getChildren().get(5)).setFill(Color.RED);
