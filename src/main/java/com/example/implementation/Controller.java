@@ -13,6 +13,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.example.implementation.Application.scene;
@@ -24,7 +26,7 @@ public class Controller {
      * @param stage on which squares are placed
      * */
 
-    static void onRoadSquareClick(Stage stage) {
+    static void onRoadSquareClick(Stage stage, ArrayList<Square> listOfSquares) {
         Robot robot = new Robot();
         scene.addEventFilter(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
 //            created coordinates that don't depend if application is on full screen or not
@@ -50,8 +52,6 @@ public class Controller {
                 return;
             }
 
-//            System.out.println(numberOfNeighbours((int)row, (int)column));
-
             if(numberOfNeighbours((int)row, (int)column) == 0){
                 Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
                 noNeighboursAlert.setContentText("This cell has no neighbours! Please select one with neighbours.");
@@ -69,9 +69,111 @@ public class Controller {
 //            if user clicked the square then the square is coloured
             if(row % 1 < 1/(1+interval) && column % 1 < 1/(1+interval)){
                 ((Rectangle) Application.group.getChildren().get(nodesInRow*(int)row+(int)column)).setFill(Color.GREEN);
-//                System.out.println(numberOfNeighbours((int)row, (int)column));
+                setDirection(listOfSquares, (int)row, (int)column);
             }
         });
+    }
+
+    public static void setDirection(ArrayList<Square> listOfSquares, int row, int column) {
+
+        if (numberOfNeighbours(row, column) == 1) {
+
+            if (!checkLeftNeighbour(row, column)) {
+                System.out.println("Invoked right");
+                listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
+                for (Direction direction : listOfSquares.get(row * nodesInRow + column - 1).getPossibleDirections()) {
+                    System.out.println(direction);
+                }
+            }
+
+            if (!checkRightNeighbour(row, column)) {
+                System.out.println("Invoked left");
+                listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
+                for (Direction direction : listOfSquares.get(row * nodesInRow + column + 1).getPossibleDirections()) {
+                    System.out.println(direction);
+                }
+            }
+
+            if (!checkUpperNeighbour(row, column)) {
+                System.out.println("Invoked up");
+                listOfSquares.get((row-1) * nodesInRow + column).addDirection(Direction.DOWN);
+                for (Direction direction : listOfSquares.get((row-1) * nodesInRow + column).getPossibleDirections()) {
+                    System.out.println(direction);
+                }
+            }
+
+            if (!checkLowerNeighbour(row, column)) {
+                System.out.println("Invoked low");
+                listOfSquares.get((row+1) * nodesInRow + column).addDirection(Direction.UP);
+                for (Direction direction : listOfSquares.get((row+1) * nodesInRow + column).getPossibleDirections()) {
+                    System.out.println(direction);
+                }
+            }
+        }
+    }
+
+    public static void printRoad(ArrayList<Square> list){
+        Square first = list.get(5*nodesInRow);
+        int row = 5;
+        int column=0;
+
+        while(!first.getPossibleDirections().isEmpty()){
+            column++;
+            System.out.println(first.getPossibleDirections());
+            first = list.get(row*nodesInRow+column);
+        }
+    }
+
+
+    private static boolean checkLeftNeighbour(int row, int column){
+        try {
+
+            if (column-1<0 || ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column - 1)).getFill() == Color.BLUE) {
+                return true;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean checkRightNeighbour(int row, int column){
+        try {
+            if (column+1>=nodesInRow || ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column + 1)).getFill() == Color.BLUE) {
+                return true;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean checkLowerNeighbour(int row, int column){
+        try {
+            if (row+1<0 || ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() == Color.BLUE) {
+                return true;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean checkUpperNeighbour(int row, int column){
+        try {
+            if (row-1>= nodesInColumn || ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column)).getFill() == Color.BLUE) {
+                return true;
+            }
+        }
+        catch(IndexOutOfBoundsException | ClassCastException e){
+            return true;
+        }
+        return false;
     }
 
     /** checks number of square placed on selected row and column */
@@ -80,45 +182,19 @@ public class Controller {
 
         System.out.println("Coordinates:"+row+", "+column);
 
-
-//        check left neighbour
-        try {
-
-            if (column-1<0 || ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column - 1)).getFill() == Color.BLUE) {
-                numberOfNeighbours--;
-            }
-        }
-        catch(IndexOutOfBoundsException | ClassCastException e){
+        if(checkLeftNeighbour(row, column)){
             numberOfNeighbours--;
         }
 
-//        check right neighbour
-        try {
-            if (column+1>=nodesInRow || ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column + 1)).getFill() == Color.BLUE) {
-                numberOfNeighbours--;
-            }
-        }
-        catch(IndexOutOfBoundsException | ClassCastException e){
+        if(checkRightNeighbour(row, column)){
             numberOfNeighbours--;
         }
 
-//        check lower neighbour
-        try {
-            if (row-1<0 || ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column)).getFill() == Color.BLUE) {
-                numberOfNeighbours--;
-            }
-        }
-        catch(IndexOutOfBoundsException | ClassCastException e){
+        if(checkLowerNeighbour(row, column)){
             numberOfNeighbours--;
         }
 
-//        check upper neighbour
-        try {
-            if (row+1>= nodesInColumn || ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() == Color.BLUE) {
-                numberOfNeighbours--;
-            }
-        }
-        catch(IndexOutOfBoundsException | ClassCastException e){
+        if(checkUpperNeighbour(row, column)){
             numberOfNeighbours--;
         }
 
@@ -127,7 +203,7 @@ public class Controller {
         return numberOfNeighbours;
     }
 
-    /** method that disables choosing square if it has 3 neighbours in the corner*/
+    /** method that disables choosing square if it has 3 neighbours in the corner */
     private static boolean disableChoosing(int row, int column){
 
 //        bottom right column
@@ -135,12 +211,10 @@ public class Controller {
             if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() != Color.BLUE
                     && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column+1)).getFill() != Color.BLUE
                     &&((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column+1)).getFill() != Color.BLUE) {
-                System.out.println("4");
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            System.out.println("4");
             return false;
         }
 
@@ -149,12 +223,10 @@ public class Controller {
             if (((Rectangle) Application.group.getChildren().get((row+1) * nodesInRow + column)).getFill() != Color.BLUE
                     && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.BLUE
                     &&((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column-1)).getFill() != Color.BLUE) {
-                System.out.println("1");
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            System.out.println("1");
             return false;
         }
 
@@ -163,12 +235,10 @@ public class Controller {
             if (((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.BLUE
                     && ((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.BLUE
                     &&((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column-1)).getFill() != Color.BLUE) {
-                System.out.println("2");
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            System.out.println("2");
             return false;
         }
 
@@ -177,12 +247,10 @@ public class Controller {
             if (((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.BLUE
                     && ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column+1)).getFill() != Color.BLUE
                     &&((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column+1)).getFill() != Color.BLUE) {
-                System.out.println("3");
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            System.out.println("3");
             return false;
         }
 

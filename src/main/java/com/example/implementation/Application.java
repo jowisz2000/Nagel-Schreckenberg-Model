@@ -31,7 +31,10 @@ public class Application extends javafx.application.Application {
 
         ArrayList<Square> listOfSquares = new ArrayList<>();
         initializeElements(stage, listOfSquares);
-        Controller.onRoadSquareClick(stage);
+        Controller.onRoadSquareClick(stage, listOfSquares);
+//        if(listOfSquares.get(5*nodesInRow).getPossibleDirections().isEmpty()){
+//            Controller.printRoad(listOfSquares);
+//        }
     }
 
 
