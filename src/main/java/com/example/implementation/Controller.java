@@ -32,25 +32,25 @@ public class Controller {
             double yWithoutMargin = robot.getMouseY() - upperMargin - 24 - stage.getY();
 
 
-            double row = xWithoutMargin / (sizeOfSquare*(1+interval));
-            double column = yWithoutMargin / (sizeOfSquare*(1+interval));
+            double column = xWithoutMargin / (sizeOfSquare*(1+interval));
+            double row = yWithoutMargin / (sizeOfSquare*(1+interval));
 
 //            it doesn't allow to colour squares when user clicks over or under squares
-            if(row <0 || column <0 || row>nodesInRow || column>nodesInColumn){
+            if(row <0 || column <0 || row>nodesInColumn || column>nodesInRow){
                 return;
             }
 
 //            it doesn't allow to choose road on start point
-            if((int)row==0 && (int)column ==5){
+            if((int)row==5 && (int)column ==0){
                 return;
             }
 
 //            it doesn't allow to choose road on end point
-            if((int)row==nodesInRow-1 && (int)column ==5){
+            if((int)row==5 && (int)column ==nodesInRow-1){
                 return;
             }
 
-            System.out.println(numberOfNeighbours((int)row, (int)column));
+//            System.out.println(numberOfNeighbours((int)row, (int)column));
 
             if(numberOfNeighbours((int)row, (int)column) == 0){
                 Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
@@ -68,7 +68,7 @@ public class Controller {
 
 //            if user clicked the square then the square is coloured
             if(row % 1 < 1/(1+interval) && column % 1 < 1/(1+interval)){
-                ((Rectangle) Application.group.getChildren().get(nodesInColumn*(int)row+(int)column)).setFill(Color.GREEN);
+                ((Rectangle) Application.group.getChildren().get(nodesInRow*(int)row+(int)column)).setFill(Color.GREEN);
 //                System.out.println(numberOfNeighbours((int)row, (int)column));
             }
         });
@@ -84,55 +84,45 @@ public class Controller {
 //        check left neighbour
         try {
 
-            if (row>= nodesInRow || column-1>=nodesInColumn ||
-                    ((Rectangle) Application.group.getChildren().get(row * nodesInColumn + column - 1)).getFill() == Color.BLUE) {
-                System.out.println(row+" "+(column-1));
+            if (column-1<0 || ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column - 1)).getFill() == Color.BLUE) {
                 numberOfNeighbours--;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            System.out.println(row +"E"+(column-1));
             numberOfNeighbours--;
         }
 
 //        check right neighbour
         try {
-            if (row>= nodesInRow || column+1>=nodesInColumn ||
-                    ((Rectangle) Application.group.getChildren().get(row * nodesInColumn + column + 1)).getFill() == Color.BLUE) {
-                System.out.println(row+" "+(column+1));
+            if (column+1>=nodesInRow || ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column + 1)).getFill() == Color.BLUE) {
                 numberOfNeighbours--;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            System.out.println(row+" "+(column+1));
             numberOfNeighbours--;
         }
 
 //        check lower neighbour
         try {
-            if (row-1>= nodesInRow || column>=nodesInColumn ||
-                    ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInColumn + column)).getFill() == Color.BLUE) {
-                System.out.println((row-1)+" "+(column));
+            if (row-1<0 || ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column)).getFill() == Color.BLUE) {
                 numberOfNeighbours--;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            System.out.println((row-1)+"E "+(column));
             numberOfNeighbours--;
         }
 
 //        check upper neighbour
         try {
-            if (row+1>= nodesInRow || column>=nodesInColumn ||
-                    ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInColumn + column)).getFill() == Color.BLUE) {
-                System.out.println((row+1)+" "+(column));
+            if (row+1>= nodesInColumn || ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() == Color.BLUE) {
                 numberOfNeighbours--;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            System.out.println((row+1)+"E "+(column));
             numberOfNeighbours--;
         }
+
+        System.out.println("Number of neighbours: "+numberOfNeighbours);
 
         return numberOfNeighbours;
     }
@@ -140,51 +130,59 @@ public class Controller {
     /** method that disables choosing square if it has 3 neighbours in the corner*/
     private static boolean disableChoosing(int row, int column){
 
-//        top right column
+//        bottom right column
         try {
-            if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInColumn + column)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInColumn + column+1)).getFill() != Color.BLUE
-                    &&((Rectangle) Application.group.getChildren().get((row) * nodesInColumn + column+1)).getFill() != Color.BLUE) {
+            if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() != Color.BLUE
+                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column+1)).getFill() != Color.BLUE
+                    &&((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column+1)).getFill() != Color.BLUE) {
+                System.out.println("4");
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
+            System.out.println("4");
             return false;
         }
 
 //        top left column
         try {
-            if (((Rectangle) Application.group.getChildren().get((row) * nodesInColumn + column+1)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInColumn + column-1)).getFill() != Color.BLUE
-                    &&((Rectangle) Application.group.getChildren().get((row + 1) * nodesInColumn + column-1)).getFill() != Color.BLUE) {
+            if (((Rectangle) Application.group.getChildren().get((row+1) * nodesInRow + column)).getFill() != Color.BLUE
+                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.BLUE
+                    &&((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column-1)).getFill() != Color.BLUE) {
+                System.out.println("1");
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
+            System.out.println("1");
             return false;
         }
 
-//        left down corner
+//        top left corner
         try {
-            if (((Rectangle) Application.group.getChildren().get((row) * nodesInColumn + column-1)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row-1) * nodesInColumn + column)).getFill() != Color.BLUE
-                    &&((Rectangle) Application.group.getChildren().get((row - 1) * nodesInColumn + column-1)).getFill() != Color.BLUE) {
+            if (((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.BLUE
+                    && ((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.BLUE
+                    &&((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column-1)).getFill() != Color.BLUE) {
+                System.out.println("2");
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
+            System.out.println("2");
             return false;
         }
 
         //        right down corner
         try {
-            if (((Rectangle) Application.group.getChildren().get((row+1) * nodesInColumn + column)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row+1) * nodesInColumn + column+1)).getFill() != Color.BLUE
-                    &&((Rectangle) Application.group.getChildren().get((row - 1) * nodesInColumn + column-1)).getFill() != Color.BLUE) {
+            if (((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.BLUE
+                    && ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column+1)).getFill() != Color.BLUE
+                    &&((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column+1)).getFill() != Color.BLUE) {
+                System.out.println("3");
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
+            System.out.println("3");
             return false;
         }
 

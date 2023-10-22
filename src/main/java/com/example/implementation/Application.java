@@ -9,21 +9,12 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.example.implementation.Variables.*;
 
 public class Application extends javafx.application.Application {
-
-    public static class CustomRectangle extends Group {
-        private Rectangle rectangle;
-
-        public CustomRectangle(double x, double y, double width, double height, Color color) {
-            rectangle = new Rectangle(x, y, width, height);
-            rectangle.setFill(color);
-            getChildren().add(rectangle);
-        }
-    }
 
 
     /** group that keeps all elements from interface */
@@ -37,29 +28,34 @@ public class Application extends javafx.application.Application {
         stage.setTitle("Implementing Nagel–Schreckenberg model");
         stage.setScene(scene);
         stage.show();
-        initializeElements(stage);
+
+        ArrayList<Square> listOfSquares = new ArrayList<>();
+        initializeElements(stage, listOfSquares);
+        Controller.onRoadSquareClick(stage);
     }
 
 
 /** sets up elements on interface
  * @param stage stage on which elements are placed */
-    public static void initializeElements(Stage stage){
+    public static void initializeElements(Stage stage, ArrayList<Square> listOfSquares){
 //        all squares are drawn
-        for(int i = 0; i < nodesInRow; i++) {
-            for (int j = 0; j < nodesInColumn; j++) {
+        for(int j = 0; j < nodesInColumn; j++) {
+            for (int i = 0; i < nodesInRow; i++) {
                 Rectangle rectangle = new Rectangle(leftMargin + (1+interval) * sizeOfSquare * i,
                         upperMargin + (1+interval) * sizeOfSquare * j, sizeOfSquare, sizeOfSquare);
                 rectangle.setFill(Color.BLUE);
 
                 Square square = new Square(rectangle);
+                listOfSquares.add(square);
+
 //                group.getChildren().add(rectangle);
             }
         }
 
 
-        Controller.onRoadSquareClick(stage);
-        ((Rectangle) group.getChildren().get(5)).setFill(Color.RED);
-        ((Rectangle) group.getChildren().get(nodesInColumn*(nodesInRow-1)+5)).setFill(Color.RED);
+//        Controller.onRoadSquareClick(stage);
+        ((Rectangle) group.getChildren().get(5*nodesInRow)).setFill(Color.RED);
+        ((Rectangle) group.getChildren().get(6*nodesInRow-1)).setFill(Color.RED);
 
         Text startPointText = new Text(40, 275, "Start point");
         group.getChildren().add(startPointText);
