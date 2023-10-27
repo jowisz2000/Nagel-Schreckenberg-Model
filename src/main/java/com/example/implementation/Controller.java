@@ -95,7 +95,7 @@ public class Controller {
             }
 
             if (!checkUpperNeighbour(row, column)) {
-                System.out.println("Invoked up");
+                System.out.println("Invoked down");
                 listOfSquares.get((row-1) * nodesInRow + column).addDirection(Direction.DOWN);
                 for (Direction direction : listOfSquares.get((row-1) * nodesInRow + column).getPossibleDirections()) {
                     System.out.println(direction);
@@ -103,7 +103,7 @@ public class Controller {
             }
 
             if (!checkLowerNeighbour(row, column)) {
-                System.out.println("Invoked low");
+                System.out.println("Invoked up");
                 listOfSquares.get((row+1) * nodesInRow + column).addDirection(Direction.UP);
                 for (Direction direction : listOfSquares.get((row+1) * nodesInRow + column).getPossibleDirections()) {
                     System.out.println(direction);
@@ -127,7 +127,6 @@ public class Controller {
 
     private static boolean checkLeftNeighbour(int row, int column){
         try {
-
             if (column-1<0 || ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column - 1)).getFill() == Color.BLUE) {
                 return true;
             }

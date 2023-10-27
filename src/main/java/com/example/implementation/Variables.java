@@ -10,7 +10,7 @@ public class Variables {
     /**    interval between neighbouring squares (fraction of side's length)  */
     public static double interval = 0.1;
     /** number of nodes in row */
-    public static int nodesInRow = 35;
+    public static int nodesInRow = 25;
     /** number of nodes in column */
     public static int nodesInColumn = 20;
 }
