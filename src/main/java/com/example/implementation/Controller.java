@@ -2,25 +2,27 @@ package com.example.implementation;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
+import javafx.scene.Group;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.robot.Robot;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.example.implementation.Application.scene;
 import static com.example.implementation.Variables.*;
 
 public class Controller {
+
+    private static final ArrayList<Paint> colorsOfRoads = new ArrayList<>(Arrays.asList(Color.GREEN, Color.RED));
     /**
      * Event handler that checks if user clicked on square and then colours selected square
      * @param stage on which squares are placed
@@ -37,18 +39,29 @@ public class Controller {
             double column = xWithoutMargin / (sizeOfSquare*(1+interval));
             double row = yWithoutMargin / (sizeOfSquare*(1+interval));
 
+            try {
+                if (((Rectangle) Application.group.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != Color.BLUE) {
+                    listOfSquares.get((int) row * nodesInRow + (int) column).getPossibleDirections().forEach(System.out::println);
+                    if(listOfSquares.get((int) row * nodesInRow + (int) column).getPossibleDirections().isEmpty()){
+                        System.out.println("Dead end");
+                    }
+                    return;
+                }
+            }
+            catch(IndexOutOfBoundsException ignored){}
+
 //            it doesn't allow to colour squares when user clicks over or under squares
             if(row <0 || column <0 || row>nodesInColumn || column>nodesInRow){
                 return;
             }
 
 //            it doesn't allow to choose road on start point
-            if((int)row==5 && (int)column ==0){
+            if((int)row==5 && (int)column == 0){
                 return;
             }
 
 //            it doesn't allow to choose road on end point
-            if((int)row==5 && (int)column ==nodesInRow-1){
+            if((int)row==5 && (int)column == nodesInRow-1){
                 return;
             }
 
@@ -75,64 +88,98 @@ public class Controller {
     }
 
     public static void setDirection(ArrayList<Square> listOfSquares, int row, int column) {
+        int numberOfNeighbours = numberOfNeighbours(row, column);
+        System.out.println("Number of neighbours: "+numberOfNeighbours);
 
-        if (numberOfNeighbours(row, column) == 1) {
-
-            if (!checkLeftNeighbour(row, column)) {
-                System.out.println("Invoked right");
-                listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
-                for (Direction direction : listOfSquares.get(row * nodesInRow + column - 1).getPossibleDirections()) {
-                    System.out.println(direction);
+        if (numberOfNeighbours == 2) {
+            if(checkLeftNeighbour(row, column) && checkRightNeighbour(row, column)){
+                if(disableChoosing(row-1, column) && disableChoosing(row+1,column)){
+                    ButtonType left = new ButtonType("left", ButtonBar.ButtonData.OK_DONE);
+                    ButtonType right = new ButtonType("right", ButtonBar.ButtonData.OK_DONE);
+                    Alert alert = new Alert(Alert.AlertType.WARNING,  "Choose direction", left, right);
+                    Optional<ButtonType> result = alert.showAndWait();
+                    if (result.orElse(left) == left) {
+                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
+                        listOfSquares.get(row * nodesInRow + column).addDirection(Direction.LEFT);
+                    }
+                    else{
+                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
+                        listOfSquares.get(row * nodesInRow + column).addDirection(Direction.RIGHT);
+                    }
+                }
+                else if(disableChoosing(row-1, column)){
+                    try {
+                        listOfSquares.get((row + 1) * nodesInRow + column).addDirection(Direction.DOWN);
+                    } catch(IndexOutOfBoundsException e){
+                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
+                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
+                    }
+                }
+                else if(disableChoosing(row+1, column)){
+                    try {
+                        listOfSquares.get((row - 1) * nodesInRow + column).addDirection(Direction.DOWN);
+                    } catch(IndexOutOfBoundsException e){
+                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
+                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
+                    }
                 }
             }
-
-            if (!checkRightNeighbour(row, column)) {
-                System.out.println("Invoked left");
-                listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
-                for (Direction direction : listOfSquares.get(row * nodesInRow + column + 1).getPossibleDirections()) {
-                    System.out.println(direction);
+            else if(disableChoosing(row, column-1) && disableChoosing(row,column+1)){
+//                    ((Rectangle) Application.group.getChildren().get(nodesInRow*(int)row+(int)column)).setFill(Color.BLUE);
+                ButtonType up = new ButtonType("up", ButtonBar.ButtonData.OK_DONE);
+                ButtonType down = new ButtonType("down", ButtonBar.ButtonData.OK_DONE);
+                Alert alert = new Alert(Alert.AlertType.WARNING,  "Choose direction", up, down);
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.orElse(up) == up) {
+                    listOfSquares.get((row+1) * nodesInRow + column).addDirection(Direction.UP);
+                    listOfSquares.get(row * nodesInRow + column).addDirection(Direction.UP);
+                }
+                else{
+                    listOfSquares.get((row-1) * nodesInRow + column).addDirection(Direction.DOWN);
+                    listOfSquares.get(row * nodesInRow + column).addDirection(Direction.DOWN);
                 }
             }
-
-            if (!checkUpperNeighbour(row, column)) {
-                System.out.println("Invoked down");
-                listOfSquares.get((row-1) * nodesInRow + column).addDirection(Direction.DOWN);
-                for (Direction direction : listOfSquares.get((row-1) * nodesInRow + column).getPossibleDirections()) {
-                    System.out.println(direction);
-                }
+            else{
+                standardDirectionConfiguration(row, column, listOfSquares);
             }
-
-            if (!checkLowerNeighbour(row, column)) {
-                System.out.println("Invoked up");
-                listOfSquares.get((row+1) * nodesInRow + column).addDirection(Direction.UP);
-                for (Direction direction : listOfSquares.get((row+1) * nodesInRow + column).getPossibleDirections()) {
-                    System.out.println(direction);
-                }
-            }
+        }
+        else{
+            standardDirectionConfiguration(row, column, listOfSquares);
         }
     }
 
-    public static void printRoad(ArrayList<Square> list){
-        Square first = list.get(5*nodesInRow);
-        int row = 5;
-        int column=0;
-
-        while(!first.getPossibleDirections().isEmpty()){
-            column++;
-            System.out.println(first.getPossibleDirections());
-            first = list.get(row*nodesInRow+column);
+    private static void standardDirectionConfiguration(int row, int column, ArrayList<Square> listOfSquares){
+        if (checkLeftNeighbour(row, column)) {
+            listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
+            System.out.println("Invoked left neighbour");
+            listOfSquares.get(row * nodesInRow + column - 1).getPossibleDirections().forEach(System.out::println);
+        }
+        if (checkRightNeighbour(row, column)) {
+            listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
+            System.out.println("Invoked right neighbour");
+            listOfSquares.get(row * nodesInRow + column + 1).getPossibleDirections().forEach(System.out::println);
+        }
+        if (checkUpperNeighbour(row, column)) {
+            listOfSquares.get((row-1) * nodesInRow + column).addDirection(Direction.DOWN);
+            System.out.println("Invoked upper neighbour");
+            listOfSquares.get((row-1) * nodesInRow + column ).getPossibleDirections().forEach(System.out::println);
+        }
+        if (checkLowerNeighbour(row, column)) {
+            listOfSquares.get((row+1) * nodesInRow + column).addDirection(Direction.UP);
+            System.out.println("Invoked lower neighbour");
+            listOfSquares.get((row+1) * nodesInRow + column).getPossibleDirections().forEach(System.out::println);
         }
     }
-
 
     private static boolean checkLeftNeighbour(int row, int column){
         try {
-            if (column-1<0 || ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column - 1)).getFill() == Color.BLUE) {
+            Paint colourOfSquare = ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column - 1)).getFill();
+            if (column-1>=0 && Controller.colorsOfRoads.contains(colourOfSquare)) {
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            return true;
+            return false;
         }
 
         return false;
@@ -140,12 +187,13 @@ public class Controller {
 
     private static boolean checkRightNeighbour(int row, int column){
         try {
-            if (column+1>=nodesInRow || ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column + 1)).getFill() == Color.BLUE) {
+            Paint colourOfSquare = ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column + 1)).getFill();
+            if (column+1<nodesInRow && Controller.colorsOfRoads.contains(colourOfSquare)) {
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            return true;
+            return false;
         }
 
         return false;
@@ -153,52 +201,47 @@ public class Controller {
 
     private static boolean checkLowerNeighbour(int row, int column){
         try {
-            if (row+1<0 || ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() == Color.BLUE) {
+            Paint colourOfSquare = ((Rectangle) Application.group.getChildren().get((row+1) * nodesInRow + column)).getFill();
+            if (row+1>=0 && Controller.colorsOfRoads.contains(colourOfSquare)) {
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            return true;
+            return false;
         }
         return false;
     }
 
     private static boolean checkUpperNeighbour(int row, int column){
         try {
-            if (row-1>= nodesInColumn || ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column)).getFill() == Color.BLUE) {
+            Paint colourOfSquare = ((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill();
+            if (row-1< nodesInColumn && Controller.colorsOfRoads.contains(colourOfSquare)) {
                 return true;
             }
         }
         catch(IndexOutOfBoundsException | ClassCastException e){
-            return true;
+            return false;
         }
         return false;
     }
 
     /** checks number of square placed on selected row and column */
     private static int numberOfNeighbours(int row, int column){
-        int numberOfNeighbours = 4;
-
-        System.out.println("Coordinates:"+row+", "+column);
-
+        int numberOfNeighbours = 0;
+//        System.out.println("Coordinates:"+row+", "+column);
         if(checkLeftNeighbour(row, column)){
-            numberOfNeighbours--;
+            numberOfNeighbours++;
         }
-
         if(checkRightNeighbour(row, column)){
-            numberOfNeighbours--;
+            numberOfNeighbours++;
         }
-
         if(checkLowerNeighbour(row, column)){
-            numberOfNeighbours--;
+            numberOfNeighbours++;
         }
-
         if(checkUpperNeighbour(row, column)){
-            numberOfNeighbours--;
+            numberOfNeighbours++;
         }
-
-        System.out.println("Number of neighbours: "+numberOfNeighbours);
-
+//        System.out.println("Number of neighbours: "+numberOfNeighbours);
         return numberOfNeighbours;
     }
 
@@ -276,13 +319,30 @@ public class Controller {
 
     /** updates probability variable when submit is clicked
      * @param probability probability to update*/
-    static void initializeSubmitButton(AtomicReference<Double> probability){
+    static void initializeSubmitButton(AtomicReference<Double> probability, TextField numberOfCars, ArrayList<Square>listOfSquares){
         Button submitButton = new Button();
         submitButton.setText("Submit");
-        submitButton.setTranslateX(200);
-        submitButton.setTranslateY(100);
-        EventHandler<ActionEvent> event = e -> System.out.println("Submitted probability:" + probability);
+        submitButton.setTranslateX(450);
+        submitButton.setTranslateY(80);
+        EventHandler<ActionEvent> event = e -> {
+            if(!numberOfCars.getText().matches("\\d+")){
+                Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
+                noNeighboursAlert.setContentText("It must be a natural number!");
+                noNeighboursAlert.show();
+            }
+            System.out.println("Submitted probability:" + probability);
+            System.out.println("Submitted number of cars:" + numberOfCars.getText());
+            setEndPoints(listOfSquares);
+        };
         submitButton.setOnAction(event);
         Application.group.getChildren().add(submitButton);
+    }
+
+    static void setEndPoints(ArrayList<Square> listOfSquares){
+        for(Square square:listOfSquares){
+            if((square.getColor()==Color.GREEN) && square.getPossibleDirections().isEmpty()){
+                square.setColor(Color.PINK);
+            }
+        }
     }
 }
