@@ -100,10 +100,11 @@ public class Application extends javafx.application.Application {
     }
 
     private static void setLegendText(){
-        Text legend = new Text("Legend:\n" +
-                "Red square: start point,\n" +
-                "Green square: road,\n" +
-                "Orange square: end point");
+        Text legend = new Text("""
+                Legend:
+                Red square: start point,
+                Green square: road,
+                Orange square: end point""");
         legend.setTranslateX(120);
         legend.setTranslateY(upperMargin + (nodesInColumn+1) * ((1+interval)*sizeOfSquare));
         group.getChildren().add(legend);
