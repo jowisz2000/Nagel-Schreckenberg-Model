@@ -1,7 +1,11 @@
 package com.example.implementation;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
@@ -32,6 +36,8 @@ public class Application extends javafx.application.Application {
         initializeElements(stage, listOfSquares);
         Controller.onRoadSquareClick(stage, listOfSquares);
         Controller.setEndPoints(listOfSquares);
+
+//        methods that starts cars shuld be there
     }
 
 
@@ -67,7 +73,9 @@ public class Application extends javafx.application.Application {
 
         AtomicReference<Double> probability = new AtomicReference<>(0.0);
         Controller.handleProbability(probability, probabilityOfStopSlider);
-        Controller.initializeSubmitButton(probability, numberOfCars, listOfSquares);
+
+        Button submitButton = initializeSubmitButton();
+        Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton);
     }
 
 /** method that creates slider that sets probability of braking*/
@@ -104,10 +112,20 @@ public class Application extends javafx.application.Application {
                 Legend:
                 Red square: start point,
                 Green square: road,
-                Orange square: end point""");
+                Pink square: end point,
+                Orange: car""");
         legend.setTranslateX(120);
         legend.setTranslateY(upperMargin + (nodesInColumn+1) * ((1+interval)*sizeOfSquare));
         group.getChildren().add(legend);
+    }
+
+    private static Button initializeSubmitButton(){
+        Button submitButton = new Button();
+        submitButton.setText("Submit");
+        submitButton.setTranslateX(450);
+        submitButton.setTranslateY(80);
+        Application.group.getChildren().add(submitButton);
+        return submitButton;
     }
 
     public static void main(String[] args) {

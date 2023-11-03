@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.example.implementation.Application.group;
 import static com.example.implementation.Application.scene;
 import static com.example.implementation.Variables.*;
 
@@ -252,7 +253,7 @@ public class Controller {
         try {
             if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() != Color.BLUE
                     && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column+1)).getFill() != Color.BLUE
-                    &&((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column+1)).getFill() != Color.BLUE) {
+                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column+1)).getFill() != Color.BLUE) {
                 return true;
             }
         }
@@ -264,7 +265,7 @@ public class Controller {
         try {
             if (((Rectangle) Application.group.getChildren().get((row+1) * nodesInRow + column)).getFill() != Color.BLUE
                     && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.BLUE
-                    &&((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column-1)).getFill() != Color.BLUE) {
+                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column-1)).getFill() != Color.BLUE) {
                 return true;
             }
         }
@@ -276,7 +277,7 @@ public class Controller {
         try {
             if (((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.BLUE
                     && ((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.BLUE
-                    &&((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column-1)).getFill() != Color.BLUE) {
+                    && ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column-1)).getFill() != Color.BLUE) {
                 return true;
             }
         }
@@ -288,7 +289,7 @@ public class Controller {
         try {
             if (((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.BLUE
                     && ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column+1)).getFill() != Color.BLUE
-                    &&((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column+1)).getFill() != Color.BLUE) {
+                    && ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column + 1)).getFill() != Color.BLUE) {
                 return true;
             }
         }
@@ -303,7 +304,7 @@ public class Controller {
      * @param probability keeps current probability that is on slider
      * @param probabilityOfStopSlider slider that enables to set probability*/
     static void handleProbability(AtomicReference<Double> probability, Slider probabilityOfStopSlider){
-        Label currentProbabilityText = new Label("Current probability: "+probability);
+        Label currentProbabilityText = new Label("Current probability: " + probability);
         currentProbabilityText.setTranslateX(150);
         currentProbabilityText.setTranslateY(80);
 
@@ -319,11 +320,7 @@ public class Controller {
 
     /** updates probability variable when submit is clicked
      * @param probability probability to update*/
-    static void initializeSubmitButton(AtomicReference<Double> probability, TextField numberOfCars, ArrayList<Square>listOfSquares){
-        Button submitButton = new Button();
-        submitButton.setText("Submit");
-        submitButton.setTranslateX(450);
-        submitButton.setTranslateY(80);
+    static void onSubmitClick(AtomicReference<Double> probability, TextField numberOfCars, ArrayList<Square>listOfSquares, Button submitButton){
         EventHandler<ActionEvent> event = e -> {
             if(!numberOfCars.getText().matches("\\d+")){
                 Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
@@ -333,9 +330,71 @@ public class Controller {
             System.out.println("Submitted probability:" + probability);
             System.out.println("Submitted number of cars:" + numberOfCars.getText());
             setEndPoints(listOfSquares);
+
+            try {
+                carMovement(Integer.parseInt(numberOfCars.getText()), listOfSquares);
+            } catch (InterruptedException ignored) {
+            }
         };
         submitButton.setOnAction(event);
-        Application.group.getChildren().add(submitButton);
+
+    }
+
+    private static void carMovement(int numberOfCars, ArrayList<Square> listOfSquares) throws InterruptedException {
+        ArrayList<Car> carList = new ArrayList<>();
+        for (int i = 0; i < numberOfCars; i++) {
+            Car newCar = new Car(5, 0, 3);
+            carList.add(newCar);
+            ((Rectangle) group.getChildren().get(newCar.getX() * nodesInRow + newCar.getY())).setFill(Color.ORANGE);
+        }
+
+        while (!carList.isEmpty()){
+            for (Car car : carList) {
+                car.incrementVelocity();
+                int currentVelocity = car.getVelocity();
+                int currentX = car.getX();
+                int currentY = car.getY();
+                //            System.out.println(currentX + " " + currentY);
+                Direction roadDirection = Direction.RIGHT;
+                listOfSquares.get(car.getX() * nodesInRow + car.getY()).setColor(Color.GREEN);
+                int checkedBoxes = 0;
+
+                while (checkedBoxes < currentVelocity) {
+
+                    switch (roadDirection) {
+                        case DOWN -> currentX++;
+                        case UP -> currentX--;
+                        case LEFT -> currentY--;
+                        case RIGHT -> currentY++;
+                    }
+
+                    if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.ORANGE) {
+                        switch (roadDirection) {
+                            case DOWN -> currentX--;
+                            case UP -> currentX++;
+                            case LEFT -> currentY++;
+                            case RIGHT -> currentY--;
+                        }
+                        break;
+                    } else if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.PINK) {
+//                        carList.remove(car);
+                        break;
+                    }
+
+                    listOfSquares.get(car.getX() * nodesInRow + car.getY()).setColor(Color.GREEN);
+
+                    car.setX(currentX);
+                    car.setY(currentY);
+
+                    listOfSquares.get(car.getX() * nodesInRow + car.getY()).setColor(Color.ORANGE);
+                    checkedBoxes++;
+                    System.out.println(currentX + " " + currentY);
+                }
+                Thread.sleep(500);
+            }
+        }
+
+
     }
 
     static void setEndPoints(ArrayList<Square> listOfSquares){
