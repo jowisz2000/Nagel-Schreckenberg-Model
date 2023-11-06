@@ -36,8 +36,6 @@ public class Application extends javafx.application.Application {
         initializeElements(stage, listOfSquares);
         Controller.onRoadSquareClick(stage, listOfSquares);
         Controller.setEndPoints(listOfSquares);
-
-//        methods that starts cars shuld be there
     }
 
 
@@ -57,18 +55,15 @@ public class Application extends javafx.application.Application {
         }
 
         ((Rectangle) group.getChildren().get(5*nodesInRow)).setFill(Color.RED);
-//        ((Rectangle) group.getChildren().get(6*nodesInRow-1)).setFill(Color.ORANGE);
 
         Text startPointText = new Text(40, 275, "Start point");
         group.getChildren().add(startPointText);
-//        Text endPointText = new Text(100+((1+interval)*sizeOfSquare)*nodesInRow, 275, "End point");
-//        group.getChildren().add(endPointText);
+
         setLegendText();
 
         Slider probabilityOfStopSlider = initializeProbabilitySlider();
 
         TextField numberOfCars = initializeNumberOfCars();
-
         group.getChildren().add(numberOfCars);
 
         AtomicReference<Double> probability = new AtomicReference<>(0.0);
