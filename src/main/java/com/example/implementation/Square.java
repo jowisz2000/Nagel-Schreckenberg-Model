@@ -6,7 +6,6 @@ import java.util.HashSet;
 
 public class Square {
     private final Rectangle rectangle;
-
     private HashSet<Direction> possibleDirections;
 
     public HashSet<Direction> getPossibleDirections() {
