@@ -1,10 +1,7 @@
 package com.example.implementation;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
@@ -12,8 +9,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,22 +21,21 @@ public class Application extends javafx.application.Application {
     static Scene scene = new Scene(group, 800, 600);
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage){
 //        stage.setMaximized(true);
         stage.setTitle("Implementing Nagel–Schreckenberg model");
         stage.setScene(scene);
         stage.show();
 
         ArrayList<Square> listOfSquares = new ArrayList<>();
-        initializeElements(stage, listOfSquares);
+        initializeElements(listOfSquares);
         Controller.onRoadSquareClick(stage, listOfSquares);
         Controller.setEndPoints(listOfSquares);
     }
 
 
-/** sets up elements on interface
- * @param stage stage on which elements are placed */
-    public static void initializeElements(Stage stage, ArrayList<Square> listOfSquares){
+/** sets up elements on interface */
+    public static void initializeElements(ArrayList<Square> listOfSquares){
 //        all squares are drawn
         for(int j = 0; j < nodesInColumn; j++) {
             for (int i = 0; i < nodesInRow; i++) {

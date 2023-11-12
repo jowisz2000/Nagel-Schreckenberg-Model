@@ -1,11 +1,9 @@
 package com.example.implementation;
 
-import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -16,14 +14,12 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.example.implementation.Application.group;
 import static com.example.implementation.Application.scene;
+import static com.example.implementation.Direction.*;
 import static com.example.implementation.Variables.*;
 
 public class Controller {
@@ -99,28 +95,28 @@ public class Controller {
                     Alert alert = new Alert(Alert.AlertType.WARNING,  "Choose direction", left, right);
                     Optional<ButtonType> result = alert.showAndWait();
                     if (result.orElse(left) == left) {
-                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
-                        listOfSquares.get(row * nodesInRow + column).addDirection(Direction.LEFT);
+                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(LEFT);
+                        listOfSquares.get(row * nodesInRow + column).addDirection(LEFT);
                     }
                     else{
-                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
-                        listOfSquares.get(row * nodesInRow + column).addDirection(Direction.RIGHT);
+                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(RIGHT);
+                        listOfSquares.get(row * nodesInRow + column).addDirection(RIGHT);
                     }
                 }
                 else if(disableChoosing(row-1, column)){
                     try {
                         listOfSquares.get((row + 1) * nodesInRow + column).addDirection(Direction.DOWN);
                     } catch(IndexOutOfBoundsException e){
-                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
-                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
+                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(RIGHT);
+                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(LEFT);
                     }
                 }
                 else if(disableChoosing(row+1, column)){
                     try {
                         listOfSquares.get((row - 1) * nodesInRow + column).addDirection(Direction.DOWN);
                     } catch(IndexOutOfBoundsException e){
-                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
-                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
+                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(RIGHT);
+                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(LEFT);
                     }
                 }
             }
@@ -130,8 +126,8 @@ public class Controller {
                 Alert alert = new Alert(Alert.AlertType.WARNING,  "Choose direction", up, down);
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.orElse(up) == up) {
-                    listOfSquares.get((row+1) * nodesInRow + column).addDirection(Direction.UP);
-                    listOfSquares.get(row * nodesInRow + column).addDirection(Direction.UP);
+                    listOfSquares.get((row+1) * nodesInRow + column).addDirection(UP);
+                    listOfSquares.get(row * nodesInRow + column).addDirection(UP);
                 }
                 else{
                     listOfSquares.get((row-1) * nodesInRow + column).addDirection(Direction.DOWN);
@@ -149,24 +145,16 @@ public class Controller {
 
     private static void standardDirectionConfiguration(int row, int column, ArrayList<Square> listOfSquares){
         if (checkLeftNeighbour(row, column)) {
-            listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
-//            System.out.println("Invoked left neighbour");
-//            listOfSquares.get(row * nodesInRow + column - 1).getPossibleDirections().forEach(System.out::println);
+            listOfSquares.get(row * nodesInRow + column - 1).addDirection(RIGHT);
         }
         if (checkRightNeighbour(row, column)) {
-            listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
-//            System.out.println("Invoked right neighbour");
-//            listOfSquares.get(row * nodesInRow + column + 1).getPossibleDirections().forEach(System.out::println);
+            listOfSquares.get(row * nodesInRow + column + 1).addDirection(LEFT);
         }
         if (checkUpperNeighbour(row, column)) {
             listOfSquares.get((row-1) * nodesInRow + column).addDirection(Direction.DOWN);
-//            System.out.println("Invoked upper neighbour");
-//            listOfSquares.get((row-1) * nodesInRow + column ).getPossibleDirections().forEach(System.out::println);
         }
         if (checkLowerNeighbour(row, column)) {
-            listOfSquares.get((row+1) * nodesInRow + column).addDirection(Direction.UP);
-//            System.out.println("Invoked lower neighbour");
-//            listOfSquares.get((row+1) * nodesInRow + column).getPossibleDirections().forEach(System.out::println);
+            listOfSquares.get((row+1) * nodesInRow + column).addDirection(UP);
         }
     }
 
@@ -300,7 +288,7 @@ public class Controller {
 
     /** method that handles events from slider that sets probability of braking
      * @param probability keeps current probability that is on slider
-     * @param probabilityOfStopSlider slider that enables to set probability*/
+     * @param probabilityOfStopSlider slider that enables to set probability */
     static void handleProbability(AtomicReference<Double> probability, Slider probabilityOfStopSlider){
         Label currentProbabilityText = new Label("Current probability: " + probability);
         currentProbabilityText.setTranslateX(150);
@@ -317,7 +305,7 @@ public class Controller {
     }
 
     /** updates probability variable when submit is clicked
-     * @param probability probability to update*/
+     * @param probability probability to update */
     static void onSubmitClick(AtomicReference<Double> probability, TextField numberOfCars, ArrayList<Square>listOfSquares, Button submitButton){
         EventHandler<ActionEvent> event = e -> {
             if(!numberOfCars.getText().matches("\\d+")){
@@ -327,80 +315,101 @@ public class Controller {
             }
             setEndPoints(listOfSquares);
             try {
-                carMovement(Integer.parseInt(numberOfCars.getText()), listOfSquares);
-            } catch (InterruptedException | NumberFormatException ignored) {
+                carMovement(Integer.parseInt(numberOfCars.getText()), listOfSquares, probability);
             }
+            catch (InterruptedException | NumberFormatException ignored) {}
 
         };
         submitButton.setOnAction(event);
 
     }
 
-    private static void carMovement(int numberOfCars, ArrayList<Square> listOfSquares) throws InterruptedException {
+    private static void carMovement(int numberOfCars, ArrayList<Square> listOfSquares, AtomicReference<Double> probability) throws InterruptedException {
         ArrayList<Car> carList = new ArrayList<>();
         for (int i = 0; i < numberOfCars; i++) {
-            Car newCar = new Car(5, 0, 1);
+            Car newCar = new Car(5, 0, 0);
             carList.add(newCar);
             ((Rectangle) group.getChildren().get(newCar.getX() * nodesInRow + newCar.getY())).setFill(Color.ORANGE);
         }
 
-        Timeline timeline = new Timeline();
+//        for(int i=0; i<3 && !carList.isEmpty(); i++){
 
-        while (!carList.isEmpty()){
             for (Iterator<Car> car = carList.iterator(); car.hasNext();) {
+                Timeline timeline = new Timeline();
                 Car currentCar = car.next();
-                currentCar.incrementVelocity();
-                int currentVelocity = currentCar.getVelocity();
-                int currentX = currentCar.getX();
-                int currentY = currentCar.getY();
 
-                Direction roadDirection = Direction.RIGHT;
-                int checkedBoxes = 0;
-                KeyFrame keyFrame = new KeyFrame(Duration.millis(500),
-                        e -> listOfSquares.get(currentCar.getX() * nodesInRow + currentCar.getY()).setColor(Color.ORANGE));
-                timeline.getKeyFrames().add(keyFrame);
+                KeyFrame frame = new KeyFrame(Duration.ZERO, event ->{
+                    currentCar.incrementVelocity();
 
-                while (checkedBoxes < currentVelocity) {
-
-                    switch (roadDirection) {
-                        case DOWN -> currentX++;
-                        case UP -> currentX--;
-                        case LEFT -> currentY--;
-                        case RIGHT -> currentY++;
+                    Random random = new Random();
+                    double generatedProbability = random.nextDouble();
+                    System.out.println("Generated: "+generatedProbability);
+                    if(generatedProbability<probability.get()){
+                        currentCar.setVelocity(0);
+                        System.out.println("Suddenly stopped");
+                        return;
                     }
+                    int currentVelocity = currentCar.getVelocity();
+                    System.out.println("Velocity: " + currentVelocity);
+                });
+                timeline.getKeyFrames().add(frame);
 
-                    if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.ORANGE) {
-                        System.out.println("Invoke going back");
-                        switch (roadDirection) {
-                            case DOWN -> currentX--;
-                            case UP -> currentX++;
-                            case LEFT -> currentY++;
-                            case RIGHT -> currentY--;
-                        }
-                        break;
-                    } else if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.PINK) {
-                        car.remove();
-                        break;
-                    }
+                KeyFrame firstKeyframe = new KeyFrame(Duration.seconds(0.25), event ->
+                        ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.ORANGE));
+                timeline.getKeyFrames().add(firstKeyframe);
 
-                    checkedBoxes++;
-                }
-                KeyFrame keyFrame2 = new KeyFrame(Duration.millis(1000),
-                        e -> listOfSquares.get(currentCar.getX() * nodesInRow + currentCar.getY()).setColor(Color.MAGENTA));
-                timeline.getKeyFrames().add(keyFrame2);
+                KeyFrame secondKeyframe = new KeyFrame(Duration.seconds(1),
+                        e -> iterateInTimeFrame(listOfSquares, car, currentCar));
+                timeline.getKeyFrames().add(secondKeyframe);
 
-                currentCar.setX(currentX);
-                currentCar.setY(currentY);
 
-                KeyFrame keyFrame3 = new KeyFrame(Duration.millis(1000),
-                        e -> listOfSquares.get(currentCar.getX() * nodesInRow + currentCar.getY()).setColor(Color.ORANGE));
-                timeline.getKeyFrames().add(keyFrame3);
-                timeline.setCycleCount(Timeline.INDEFINITE);
+                KeyFrame thirdKeyframe = new KeyFrame(Duration.seconds(1.75), event ->
+                        ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.ORANGE));
+                timeline.getKeyFrames().add(thirdKeyframe);
+                timeline.setCycleCount(10);
                 timeline.play();
-//                System.out.println("Before"+ currentCar.getX() + " " + currentCar.getY()+", "+currentX+" "+currentY);
-//                System.out.println("After"+ currentCar.getX() + " " + currentCar.getY());
             }
+//        }
+    }
+
+
+    private static void iterateInTimeFrame(ArrayList<Square> listOfSquares, Iterator<Car> car, Car currentCar){
+        int currentX = currentCar.getX();
+        int currentY = currentCar.getY();
+        int checkedBoxes = 0;
+        while (checkedBoxes < currentCar.getVelocity()) {
+            System.out.println("We're inside loop");
+            Direction roadDirection = RIGHT;
+            switch (roadDirection) {
+                case DOWN -> currentX++;
+                case UP -> currentX--;
+                case LEFT -> currentY--;
+                case RIGHT -> currentY++;
+            }
+
+            if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.ORANGE) {
+                System.out.println("Invoke going back");
+                switch (roadDirection) {
+                    case DOWN -> currentX--;
+                    case UP -> currentX++;
+                    case LEFT -> currentY++;
+                    case RIGHT -> currentY--;
+                }
+                break;
+            } else if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.PINK) {
+                car.remove();
+                break;
+            }
+
+            checkedBoxes++;
         }
+        if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.PINK) return;
+
+        ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.GREEN);
+
+        System.out.println(currentX+" "+currentY+", "+currentCar.getX()+ " "+currentCar.getY());
+        currentCar.setX(currentX);
+        currentCar.setY(currentY);
     }
 
     static void setEndPoints(ArrayList<Square> listOfSquares){
