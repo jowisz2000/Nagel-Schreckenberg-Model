@@ -1,5 +1,11 @@
 package com.example.implementation;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+
 import static com.example.implementation.Variables.maxVelocity;
+import static com.example.implementation.Variables.nodesInRow;
 
 public class Car {
     private int x;
@@ -32,8 +38,17 @@ public class Car {
         return direction;
     }
 
-    public void setDirection(Direction direction) {
-        this.direction = direction;
+    public void setDirection(ArrayList<Square> listOfSquares, int currentX, int currentY) {
+        HashSet<Direction> possibleDirections = listOfSquares.get(currentX * nodesInRow + currentY).getPossibleDirections();
+        List<Direction> convertedDirections = new ArrayList<>(possibleDirections);
+        convertedDirections.forEach(System.out::println);
+        Random random = new Random();
+        try {
+            this.direction = convertedDirections.get(random.nextInt() % convertedDirections.size());
+        }
+        catch(ArithmeticException e){
+            this.direction = null;
+        }
     }
 
     public int getVelocity() {
