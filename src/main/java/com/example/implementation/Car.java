@@ -46,7 +46,7 @@ public class Car {
         try {
             this.direction = convertedDirections.get(random.nextInt() % convertedDirections.size());
         }
-        catch(ArithmeticException e){
+        catch(ArithmeticException | NullPointerException e){
             this.direction = null;
         }
     }

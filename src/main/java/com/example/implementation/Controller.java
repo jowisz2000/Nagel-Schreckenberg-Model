@@ -103,35 +103,29 @@ public class Controller {
                         listOfSquares.get(row * nodesInRow + column).addDirection(RIGHT);
                     }
                 }
-                else if(disableChoosing(row-1, column)){
-                    try {
-                        listOfSquares.get((row + 1) * nodesInRow + column).addDirection(Direction.DOWN);
-                    } catch(IndexOutOfBoundsException e){
-                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(RIGHT);
-                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(LEFT);
-                    }
-                }
-                else if(disableChoosing(row+1, column)){
-                    try {
-                        listOfSquares.get((row - 1) * nodesInRow + column).addDirection(Direction.DOWN);
-                    } catch(IndexOutOfBoundsException e){
-                        listOfSquares.get(row * nodesInRow + column - 1).addDirection(RIGHT);
-                        listOfSquares.get(row * nodesInRow + column + 1).addDirection(LEFT);
-                    }
+                else if(disableChoosing(row-1, column) || disableChoosing(row+1, column)){
+                    listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
+                    listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
                 }
             }
-            else if(disableChoosing(row, column-1) && disableChoosing(row,column+1)){
-                ButtonType up = new ButtonType("up", ButtonBar.ButtonData.OK_DONE);
-                ButtonType down = new ButtonType("down", ButtonBar.ButtonData.OK_DONE);
-                Alert alert = new Alert(Alert.AlertType.WARNING,  "Choose direction", up, down);
-                Optional<ButtonType> result = alert.showAndWait();
-                if (result.orElse(up) == up) {
-                    listOfSquares.get((row+1) * nodesInRow + column).addDirection(UP);
-                    listOfSquares.get(row * nodesInRow + column).addDirection(UP);
+            else if(checkUpperNeighbour(row, column) && checkLowerNeighbour(row, column)){
+                if(disableChoosing(row, column-1) && disableChoosing(row,column+1)){
+                    ButtonType up = new ButtonType("up", ButtonBar.ButtonData.OK_DONE);
+                    ButtonType down = new ButtonType("down", ButtonBar.ButtonData.OK_DONE);
+                    Alert alert = new Alert(Alert.AlertType.WARNING,  "Choose direction", up, down);
+                    Optional<ButtonType> result = alert.showAndWait();
+                    if (result.orElse(up) == up) {
+                        listOfSquares.get((row+1) * nodesInRow + column).addDirection(UP);
+                        listOfSquares.get(row * nodesInRow + column).addDirection(UP);
+                    }
+                    else{
+                        listOfSquares.get((row-1) * nodesInRow + column).addDirection(DOWN);
+                        listOfSquares.get(row * nodesInRow + column).addDirection(DOWN);
+                    }
                 }
-                else{
+                else if(disableChoosing(row, column-1) || disableChoosing(row, column+1)){
+                    listOfSquares.get((row+1) * nodesInRow + column).addDirection(Direction.UP);
                     listOfSquares.get((row-1) * nodesInRow + column).addDirection(Direction.DOWN);
-                    listOfSquares.get(row * nodesInRow + column).addDirection(Direction.DOWN);
                 }
             }
             else{
@@ -325,6 +319,7 @@ public class Controller {
 
     private static void carMovement(int numberOfCars, ArrayList<Square> listOfSquares, AtomicReference<Double> probability) throws InterruptedException {
         ArrayList<Car> carList = new ArrayList<>();
+        boolean[][] isCellOccupied = new boolean[nodesInRow][nodesInColumn];
         for (int i = 0; i < numberOfCars; i++) {
             Car newCar = new Car(5, 0, 0);
             carList.add(newCar);
@@ -334,13 +329,14 @@ public class Controller {
 
             for (Iterator<Car> car = carList.iterator(); car.hasNext();) {
                 Timeline timeline = new Timeline();
-                timeline.setCycleCount(10);
+                timeline.setCycleCount(-1);
 
                 AtomicReference<Boolean> reachedDeadEnd = new AtomicReference<>(false);
 
                 Car currentCar = car.next();
 
                 KeyFrame frame = new KeyFrame(Duration.ZERO, event -> {
+
                     currentCar.incrementVelocity();
 
                     Random random = new Random();
@@ -356,8 +352,8 @@ public class Controller {
                 });
                 timeline.getKeyFrames().add(frame);
 
-                KeyFrame secondKeyframe = new KeyFrame(Duration.seconds(1.5),
-                        e -> iterateInTimeFrame(listOfSquares, car, currentCar, timeline, reachedDeadEnd));
+                KeyFrame secondKeyframe = new KeyFrame(Duration.seconds(1),
+                        e -> iterateInTimeFrame(listOfSquares, car, currentCar, timeline, reachedDeadEnd, isCellOccupied));
                 timeline.getKeyFrames().add(secondKeyframe);
 
                 KeyFrame stopAnimationKeyFrame = new KeyFrame(Duration.seconds(1.75), event -> {
@@ -370,9 +366,10 @@ public class Controller {
                 timeline.getKeyFrames().add(stopAnimationKeyFrame);
 
                 KeyFrame thirdKeyframe = new KeyFrame(Duration.seconds(2), event ->{
-                        if(!reachedDeadEnd.get()){
-                        ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.ORANGE);
-                    }
+                        if(!reachedDeadEnd.get() && currentCar.getX() != 5 && currentCar.getY() != 0 && !isCellOccupied[currentCar.getX()][currentCar.getY()]) {
+                            isCellOccupied[currentCar.getX()][currentCar.getY()] = true;
+                            ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.ORANGE);
+                        }
                 });
                 timeline.getKeyFrames().add(thirdKeyframe);
 
@@ -382,7 +379,7 @@ public class Controller {
     }
 
 
-    private static void iterateInTimeFrame(ArrayList<Square> listOfSquares, Iterator<Car> car, Car currentCar, Timeline timeline, AtomicReference<Boolean> reachedDeadEnd){
+    private static void iterateInTimeFrame(ArrayList<Square> listOfSquares, Iterator<Car> car, Car currentCar, Timeline timeline, AtomicReference<Boolean> reachedDeadEnd, boolean[][] isCellOccupied){
         int currentX = currentCar.getX();
         int currentY = currentCar.getY();
         int checkedBoxes = 0;
@@ -393,6 +390,12 @@ public class Controller {
             currentCar.setDirection(listOfSquares, currentX, currentY);
             Direction roadDirection = currentCar.getDirection();
 
+            if(roadDirection==null){
+                assert timeline != null;
+                timeline.stop();
+                return;
+            }
+
             switch (roadDirection) {
                 case DOWN -> currentX++;
                 case UP -> currentX--;
@@ -400,7 +403,7 @@ public class Controller {
                 case RIGHT -> currentY++;
             }
 
-            if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.ORANGE) {
+            if (currentX!=5 && currentY!=0 && isCellOccupied[currentX][currentY]) {
                 System.out.println("Invoke going back");
                 switch (roadDirection) {
                     case DOWN -> currentX--;
@@ -408,10 +411,13 @@ public class Controller {
                     case LEFT -> currentY++;
                     case RIGHT -> currentY--;
                 }
+                currentCar.setX(currentX);
+                currentCar.setY(currentY);
                 break;
             } else if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.PINK) {
                 try {
                     ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.GREEN);
+                    isCellOccupied[currentCar.getX()][currentCar.getY()] = false;
                     currentCar.setX(currentX);
                     currentCar.setY(currentY);
                     reachedDeadEnd.set(true);
@@ -430,6 +436,7 @@ public class Controller {
             }
 
             ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.GREEN);
+            isCellOccupied[currentCar.getX()][currentCar.getY()] = false;
             currentCar.setX(currentX);
             currentCar.setY(currentY);
             checkedBoxes++;
