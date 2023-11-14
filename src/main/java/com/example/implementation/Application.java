@@ -84,6 +84,7 @@ public class Application extends javafx.application.Application {
         return probabilityOfStopSlider;
     }
 
+    /** methods that creates field to set up number of cars */
     private static TextField initializeNumberOfCars(){
         TextField numberOfCars = new TextField();
         numberOfCars.setTranslateX(400);
@@ -96,6 +97,7 @@ public class Application extends javafx.application.Application {
         return numberOfCars;
     }
 
+    /** method that sets up legend */
     private static void setLegendText(){
         Text legend = new Text("""
                 Legend:
@@ -103,11 +105,12 @@ public class Application extends javafx.application.Application {
                 Green square: road,
                 Pink square: end point,
                 Orange: car""");
-        legend.setTranslateX(120);
-        legend.setTranslateY(upperMargin + (nodesInColumn+1) * ((1+interval)*sizeOfSquare));
+        legend.setTranslateX(600);
+        legend.setTranslateY(30);
         group.getChildren().add(legend);
     }
 
+    /** method that initializes up legend */
     private static Button initializeSubmitButton(){
         Button submitButton = new Button();
         submitButton.setText("Submit");

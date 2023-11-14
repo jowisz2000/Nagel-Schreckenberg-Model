@@ -4,6 +4,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import java.util.HashSet;
 
+/** represents single square that is drawn on interface */
 public class Square {
     private final Rectangle rectangle;
     private HashSet<Direction> possibleDirections;
