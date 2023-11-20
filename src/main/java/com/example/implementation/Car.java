@@ -41,10 +41,9 @@ public class Car {
     public void setDirection(ArrayList<Square> listOfSquares, int currentX, int currentY) {
         HashSet<Direction> possibleDirections = listOfSquares.get(currentX * nodesInRow + currentY).getPossibleDirections();
         List<Direction> convertedDirections = new ArrayList<>(possibleDirections);
-        convertedDirections.forEach(System.out::println);
         Random random = new Random();
         try {
-            this.direction = convertedDirections.get(random.nextInt() % convertedDirections.size());
+            this.direction = convertedDirections.get(random.nextInt(1000) % convertedDirections.size());
         }
         catch(ArithmeticException | NullPointerException e){
             this.direction = null;
@@ -61,16 +60,5 @@ public class Car {
 
     public void setVelocity(int velocity) {
         this.velocity = velocity;
-    }
-
-    public void changeCoordinates(Direction roadDirection){
-
-        switch(roadDirection){
-            case DOWN -> this.y++;
-            case UP -> this.y--;
-            case LEFT -> this.x--;
-            case RIGHT -> this.x++;
-        }
-
     }
 }

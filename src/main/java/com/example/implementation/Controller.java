@@ -4,7 +4,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -360,9 +359,9 @@ public class Controller {
     static void onSubmitClick(AtomicReference<Double> probability, TextField numberOfCars, ArrayList<Square>listOfSquares, Button submitButton){
         EventHandler<ActionEvent> event = e -> {
             if(!numberOfCars.getText().matches("\\d+")){
-                Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
-                noNeighboursAlert.setContentText("It must be a natural number!");
-                noNeighboursAlert.show();
+                Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
+                invalidNumberAlert.setContentText("It must be a natural number!");
+                invalidNumberAlert.show();
             }
             setEndPoints(listOfSquares);
             try {
@@ -380,35 +379,31 @@ public class Controller {
      * @param probability probability of car's sudden stop*/
     private static void carMovement(int numberOfCars, ArrayList<Square> listOfSquares, AtomicReference<Double> probability) throws InterruptedException {
         ArrayList<Car> carList = new ArrayList<>();
-        boolean[][] isCellOccupied = new boolean[nodesInRow][nodesInColumn];
+        boolean[][] isCellOccupied = new boolean[nodesInColumn][nodesInRow];
         for (int i = 0; i < numberOfCars; i++) {
-            Car newCar = new Car(5, 0, 0);
+            Random random = new Random();
+            Car newCar = new Car(5, 0, random.nextInt(5));
             carList.add(newCar);
-            ((Rectangle) group.getChildren().get(newCar.getX() * nodesInRow + newCar.getY())).setFill(Color.ORANGE);
+//            ((Rectangle) group.getChildren().get(newCar.getX() * nodesInRow + newCar.getY())).setFill(Color.ORANGE);
         }
-
 
             for (Iterator<Car> car = carList.iterator(); car.hasNext();) {
                 Timeline timeline = new Timeline();
-                timeline.setCycleCount(-1);
+                timeline.setCycleCount(Timeline.INDEFINITE);
 
                 AtomicReference<Boolean> reachedDeadEnd = new AtomicReference<>(false);
                 Car currentCar = car.next();
 
                 KeyFrame initializeVelocityFrame = new KeyFrame(Duration.ZERO, event -> {
-
                     currentCar.incrementVelocity();
-
                     Random random = new Random();
                     double generatedProbability = random.nextDouble();
 //                    System.out.println("Generated: "+generatedProbability);
                     if(generatedProbability < probability.get()){
                         currentCar.setVelocity(0);
 //                        System.out.println("Suddenly stopped");
-                        return;
                     }
-//                    int currentVelocity = currentCar.getVelocity();
-//                    System.out.println("Velocity: " + currentVelocity);
+                    System.out.println("Velocity: " + currentCar.getVelocity());
                 });
                 timeline.getKeyFrames().add(initializeVelocityFrame);
 
@@ -416,7 +411,7 @@ public class Controller {
                         e -> iterateInTimeFrame(listOfSquares, car, currentCar, timeline, reachedDeadEnd, isCellOccupied));
                 timeline.getKeyFrames().add(iterationKeyframe);
 
-                KeyFrame stopAnimationKeyFrame = new KeyFrame(Duration.seconds(1.75), event -> {
+                KeyFrame stopAnimationKeyFrame = new KeyFrame(Duration.seconds(2), event -> {
                     if (currentCar == null) {
 //                        System.out.println("Stop");
                         timeline.stop();
@@ -425,34 +420,35 @@ public class Controller {
                 });
                 timeline.getKeyFrames().add(stopAnimationKeyFrame);
 
-                KeyFrame drawCarsKeyframe = new KeyFrame(Duration.seconds(2), event ->{
-                        if(!reachedDeadEnd.get() && !(currentCar.getX() == 5 && currentCar.getY() == 0) && !isCellOccupied[currentCar.getX()][currentCar.getY()]) {
+                KeyFrame drawCarsKeyFrame = new KeyFrame(Duration.seconds(3), event ->{
+                        if(!reachedDeadEnd.get() && !(currentCar.getX() == 5 && currentCar.getY() == 0)) {
                             isCellOccupied[currentCar.getX()][currentCar.getY()] = true;
                             ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.ORANGE);
                         }
                 });
-                timeline.getKeyFrames().add(drawCarsKeyframe);
-
+                timeline.getKeyFrames().add(drawCarsKeyFrame);
                 timeline.play();
-
             }
     }
 
 /** makes single iteration
- * @param  listOfSquares list of drawn squares
+ * @param listOfSquares list of drawn squares
  * @param car iterator that holds all cars
  * @param currentCar coordinates of this car are changed while invoking this method
  * @param timeline timeline that holds all animation KeyFrames
  * @param isCellOccupied 2D array of booleans that tells whether cell is occupied by car
- * @param reachedDeadEnd describes if car reached dead end*/
+ * @param reachedDeadEnd describes if car reached dead end */
     private static void iterateInTimeFrame(ArrayList<Square> listOfSquares, Iterator<Car> car, Car currentCar, Timeline timeline, AtomicReference<Boolean> reachedDeadEnd, boolean[][] isCellOccupied){
         int currentX = currentCar.getX();
         int currentY = currentCar.getY();
         int checkedBoxes = 0;
+        int oldX = currentX;
+        int oldY = currentY;
+        System.out.println("In the beginning of iteration");
+        printOccupiedCells(isCellOccupied);
 
         while (checkedBoxes < currentCar.getVelocity()) {
 
-//            System.out.println("We're inside loop");
             currentCar.setDirection(listOfSquares, currentX, currentY);
             Direction roadDirection = currentCar.getDirection();
 
@@ -471,7 +467,7 @@ public class Controller {
 
 //            if car is not on start point and if square is occupied by another car, then car goes one square back
             if (!(currentX==5 && currentY==0) && isCellOccupied[currentX][currentY]) {
-//                System.out.println("Invoke going back");
+                System.out.println("Invoke going back");
                 switch (roadDirection) {
                     case DOWN -> currentX--;
                     case UP -> currentX++;
@@ -480,22 +476,24 @@ public class Controller {
                 }
                 currentCar.setX(currentX);
                 currentCar.setY(currentY);
-                break;
+                currentCar.setVelocity(checkedBoxes);
+                ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.ORANGE);
+                isCellOccupied[currentCar.getX()][currentCar.getY()] = true;
+                return;
             }
 //            if squares reaches dead end, then car is removed
             else if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.PINK) {
                 try {
                     ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.GREEN);
+                    isCellOccupied[currentCar.getX()][currentCar.getY()] = false;
                     currentCar.setX(currentX);
                     currentCar.setY(currentY);
                     reachedDeadEnd.set(true);
                     car.remove();
-                    assert timeline != null;
-                    timeline.stop();
                     return;
                 }
                 catch(IllegalStateException e){
-                    if (timeline != null) {
+                    if (!car.hasNext()) {
                         timeline.stop();
                         timeline.getKeyFrames().clear();
                         return;
@@ -510,6 +508,10 @@ public class Controller {
             checkedBoxes++;
 //            System.out.println(currentX+" "+currentY+", "+currentCar.getX()+ " "+currentCar.getY()+"\n--------");
         }
+        isCellOccupied[oldX][oldY] = false;
+        isCellOccupied[currentCar.getX()][currentCar.getY()] = true;
+        System.out.println("In the end of iteration");
+        printOccupiedCells(isCellOccupied);
     }
 
     /** searches for end points in given squares */
@@ -519,6 +521,16 @@ public class Controller {
                 square.setColor(Color.PINK);
             }
 
+    }
+
+    private static void printOccupiedCells(boolean[][]array){
+        for(int i=0; i<nodesInColumn; i++){
+            for(int j=0; j<nodesInRow; j++){
+                if(array[i][j]){
+                    System.out.println(i+", "+j);
+                }
+            }
+        }
     }
 
 
