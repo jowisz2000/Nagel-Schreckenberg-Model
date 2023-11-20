@@ -6,8 +6,6 @@ Simple guide:
 
 ![Zrzut ekranu 2023-11-14 220104](https://github.com/jowisz2000/Nagel-Schreckenberg-Model/assets/90037830/48d58092-c55f-4172-aec2-e9b21516a5c5)
 
-## Unfortunately, in this moment if only works for one car.
-
 ## You can lengthen road by clicking blue square that is adjoining with road
 
 * If you click on road then possible directions are shown ( int his case I clicked on square that is next to the red one):
