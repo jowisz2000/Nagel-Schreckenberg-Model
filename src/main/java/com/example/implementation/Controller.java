@@ -381,8 +381,7 @@ public class Controller {
         ArrayList<Car> carList = new ArrayList<>();
         boolean[][] isCellOccupied = new boolean[nodesInColumn][nodesInRow];
         for (int i = 0; i < numberOfCars; i++) {
-            Random random = new Random();
-            Car newCar = new Car(5, 0, random.nextInt(5));
+            Car newCar = new Car(5, 0, 0);
             carList.add(newCar);
 //            ((Rectangle) group.getChildren().get(newCar.getX() * nodesInRow + newCar.getY())).setFill(Color.ORANGE);
         }
@@ -446,6 +445,7 @@ public class Controller {
         int oldY = currentY;
         System.out.println("In the beginning of iteration");
         printOccupiedCells(isCellOccupied);
+        Direction directionOnJunction = null;
 
         while (checkedBoxes < currentCar.getVelocity()) {
 
@@ -465,15 +465,29 @@ public class Controller {
                 case RIGHT -> currentY++;
             }
 
+            if(numberOfNeighbours(currentX, currentY) > 2) {
+                directionOnJunction = roadDirection;
+            }
+
 //            if car is not on start point and if square is occupied by another car, then car goes one square back
             if (!(currentX==5 && currentY==0) && isCellOccupied[currentX][currentY]) {
-                System.out.println("Invoke going back");
                 switch (roadDirection) {
                     case DOWN -> currentX--;
                     case UP -> currentX++;
                     case LEFT -> currentY++;
                     case RIGHT -> currentY--;
                 }
+
+                if(numberOfNeighbours(currentX, currentY) > 2) {
+                    System.out.println("Invoke going back");
+                    switch (Objects.requireNonNull(directionOnJunction)) {
+                        case DOWN -> currentX--;
+                        case UP -> currentX++;
+                        case LEFT -> currentY++;
+                        case RIGHT -> currentY--;
+                    }
+                }
+
                 currentCar.setX(currentX);
                 currentCar.setY(currentY);
                 currentCar.setVelocity(checkedBoxes);
@@ -505,7 +519,10 @@ public class Controller {
             isCellOccupied[currentCar.getX()][currentCar.getY()] = false;
             currentCar.setX(currentX);
             currentCar.setY(currentY);
-            checkedBoxes++;
+
+            if(numberOfNeighbours(currentX, currentY) <= 2) {
+                checkedBoxes++;
+            }
 //            System.out.println(currentX+" "+currentY+", "+currentCar.getX()+ " "+currentCar.getY()+"\n--------");
         }
         isCellOccupied[oldX][oldY] = false;
