@@ -25,7 +25,7 @@ import static com.example.implementation.Variables.*;
 
 public class Controller {
 
-    private static final ArrayList<Paint> colorsOfRoads = new ArrayList<>(Arrays.asList(Color.GREEN, Color.RED));
+    private static final ArrayList<Paint> colorsOfRoads = new ArrayList<>(Arrays.asList(Color.BLACK, Color.RED));
     /**
      * Event handler that checks if user clicked on square and then colours selected square
      * @param stage on which squares are placed
@@ -45,7 +45,7 @@ public class Controller {
             try {
 
 //                if we click on road then possible directions for this part of road is shown
-                if (((Rectangle) Application.group.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != Color.BLUE) {
+                if (((Rectangle) Application.group.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != Color.GREEN) {
                     ArrayList<Direction> possibleDirections = new ArrayList<>(listOfSquares.get((int)row*nodesInRow+(int)column).getPossibleDirections());
                     StringBuilder stringBuilder = new StringBuilder();
                     for (Direction current : possibleDirections) {
@@ -101,7 +101,7 @@ public class Controller {
 
 //            if user clicked the square then the square is coloured
             if(row % 1 < 1/(1+interval) && column % 1 < 1/(1+interval)){
-                ((Rectangle) Application.group.getChildren().get(nodesInRow*(int)row+(int)column)).setFill(Color.GREEN);
+                ((Rectangle) Application.group.getChildren().get(nodesInRow*(int)row+(int)column)).setFill(Color.BLACK);
                 setDirection(listOfSquares, (int)row, (int)column);
             }
         });
@@ -284,9 +284,9 @@ public class Controller {
 
 //        bottom right column
         try {
-            if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column+1)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column+1)).getFill() != Color.BLUE) {
+            if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() != Color.GREEN
+                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column+1)).getFill() != Color.GREEN
+                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column+1)).getFill() != Color.GREEN) {
                 return true;
             }
         }
@@ -296,9 +296,9 @@ public class Controller {
 
 //        top left column
         try {
-            if (((Rectangle) Application.group.getChildren().get((row+1) * nodesInRow + column)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column-1)).getFill() != Color.BLUE) {
+            if (((Rectangle) Application.group.getChildren().get((row+1) * nodesInRow + column)).getFill() != Color.GREEN
+                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.GREEN
+                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column-1)).getFill() != Color.GREEN) {
                 return true;
             }
         }
@@ -308,9 +308,9 @@ public class Controller {
 
 //        top left corner
         try {
-            if (((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column-1)).getFill() != Color.BLUE) {
+            if (((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.GREEN
+                    && ((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.GREEN
+                    && ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column-1)).getFill() != Color.GREEN) {
                 return true;
             }
         }
@@ -320,9 +320,9 @@ public class Controller {
 
         //        right down corner
         try {
-            if (((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column+1)).getFill() != Color.BLUE
-                    && ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column + 1)).getFill() != Color.BLUE) {
+            if (((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.GREEN
+                    && ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column+1)).getFill() != Color.GREEN
+                    && ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column + 1)).getFill() != Color.GREEN) {
                 return true;
             }
         }
@@ -498,7 +498,7 @@ public class Controller {
 //            if squares reaches dead end, then car is removed
             else if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.PINK) {
                 try {
-                    ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.GREEN);
+                    ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.BLACK);
                     isCellOccupied[currentCar.getX()][currentCar.getY()] = false;
                     currentCar.setX(currentX);
                     currentCar.setY(currentY);
@@ -515,7 +515,7 @@ public class Controller {
                 }
             }
             // old coordinates of car are free
-            ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.GREEN);
+            ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.BLACK);
             isCellOccupied[currentCar.getX()][currentCar.getY()] = false;
             currentCar.setX(currentX);
             currentCar.setY(currentY);
@@ -534,7 +534,7 @@ public class Controller {
     /** searches for end points in given squares */
     static void setEndPoints(ArrayList<Square> listOfSquares) {
         for (Square square : listOfSquares)
-            if ((square.getColor() == Color.GREEN) && square.getPossibleDirections().isEmpty()) {
+            if ((square.getColor() == Color.BLACK) && square.getPossibleDirections().isEmpty()) {
                 square.setColor(Color.PINK);
             }
 

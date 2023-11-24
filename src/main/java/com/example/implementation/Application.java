@@ -41,7 +41,7 @@ public class Application extends javafx.application.Application {
             for (int i = 0; i < nodesInRow; i++) {
                 Rectangle rectangle = new Rectangle(leftMargin + (1+interval) * sizeOfSquare * i,
                         upperMargin + (1+interval) * sizeOfSquare * j, sizeOfSquare, sizeOfSquare);
-                rectangle.setFill(Color.BLUE);
+                rectangle.setFill(Color.GREEN);
 
                 Square square = new Square(rectangle);
                 listOfSquares.add(square);

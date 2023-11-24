@@ -23,7 +23,7 @@ public class Square {
 
     public Square(Rectangle rectangle) {
         this.rectangle = rectangle;
-        this.rectangle.setFill(Color.BLUE);
+        this.rectangle.setFill(Color.GREEN);
         Application.group.getChildren().add(rectangle);
         this.possibleDirections = new HashSet<>();
     }
