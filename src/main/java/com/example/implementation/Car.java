@@ -55,7 +55,11 @@ public class Car {
     }
 
     public void incrementVelocity(){
-        if(this.velocity< maxVelocity) this.velocity++;
+        if(this.velocity < maxVelocity) this.velocity++;
+    }
+
+    public void decrementVelocity(){
+        if(this.velocity > 0) this.velocity--;
     }
 
     public void setVelocity(int velocity) {

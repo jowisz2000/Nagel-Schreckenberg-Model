@@ -1,5 +1,6 @@
 package com.example.implementation;
 
+import javafx.animation.Timeline;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -30,7 +31,6 @@ public class Application extends javafx.application.Application {
         ArrayList<Square> listOfSquares = new ArrayList<>();
         initializeElements(listOfSquares);
         Controller.onRoadSquareClick(stage, listOfSquares);
-        Controller.setEndPoints(listOfSquares);
     }
 
 
@@ -63,8 +63,15 @@ public class Application extends javafx.application.Application {
         AtomicReference<Double> probability = new AtomicReference<>(0.0);
         Controller.handleProbability(probability, probabilityOfStopSlider);
 
+        Timeline timeline = new Timeline();
+        boolean[][] isCellOccupied = new boolean[nodesInColumn][nodesInRow];
+        ArrayList<Car> carList = new ArrayList<>();
+
         Button submitButton = initializeSubmitButton();
-        Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton);
+        Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied, carList);
+
+        Button resetButton = initializeResetButton();
+        Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList);
     }
 
 /** method that creates slider that sets probability of braking*/
@@ -87,13 +94,12 @@ public class Application extends javafx.application.Application {
     /** methods that creates field to set up number of cars */
     private static TextField initializeNumberOfCars(){
         TextField numberOfCars = new TextField();
-        numberOfCars.setTranslateX(400);
+        numberOfCars.setTranslateX(330);
         numberOfCars.setTranslateY(40);
         Text numberOfCarsText = new Text("Set up number of cars");
-        numberOfCarsText.setTranslateX(400);
+        numberOfCarsText.setTranslateX(330);
         numberOfCarsText.setTranslateY(30);
         group.getChildren().add(numberOfCarsText);
-
         return numberOfCars;
     }
 
@@ -105,7 +111,7 @@ public class Application extends javafx.application.Application {
                 Green square: road,
                 Pink square: end point,
                 Orange: car""");
-        legend.setTranslateX(600);
+        legend.setTranslateX(650);
         legend.setTranslateY(30);
         group.getChildren().add(legend);
     }
@@ -114,7 +120,16 @@ public class Application extends javafx.application.Application {
     private static Button initializeSubmitButton(){
         Button submitButton = new Button();
         submitButton.setText("Submit");
-        submitButton.setTranslateX(450);
+        submitButton.setTranslateX(370);
+        submitButton.setTranslateY(80);
+        Application.group.getChildren().add(submitButton);
+        return submitButton;
+    }
+
+    private static Button initializeResetButton(){
+        Button submitButton = new Button();
+        submitButton.setText("Reset animation");
+        submitButton.setTranslateX(520);
         submitButton.setTranslateY(80);
         Application.group.getChildren().add(submitButton);
         return submitButton;

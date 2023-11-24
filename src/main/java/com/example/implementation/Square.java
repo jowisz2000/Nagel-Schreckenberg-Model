@@ -7,7 +7,7 @@ import java.util.HashSet;
 /** represents single square that is drawn on interface */
 public class Square {
     private final Rectangle rectangle;
-    private HashSet<Direction> possibleDirections;
+    private final HashSet<Direction> possibleDirections;
 
     public HashSet<Direction> getPossibleDirections() {
         return possibleDirections;
@@ -17,9 +17,7 @@ public class Square {
         possibleDirections.add(direction);
     }
 
-    public void setPossibleDirections(HashSet<Direction> possibleDirections) {
-        this.possibleDirections = possibleDirections;
-    }
+    public void resetDirection() { possibleDirections.clear(); }
 
     public Square(Rectangle rectangle) {
         this.rectangle = rectangle;
