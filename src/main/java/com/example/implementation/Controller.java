@@ -357,21 +357,26 @@ public class Controller {
      * @param listOfSquares all drawn squares
      * @param submitButton button that is responsible for starting animation*/
     static void onSubmitClick(AtomicReference<Double> probability, TextField numberOfCars, ArrayList<Square>listOfSquares,
-                              Button submitButton, Timeline timeline, boolean[][]isCellOccupied, ArrayList<Car> carList){
+                              Button submitButton, Timeline timeline, boolean[][]isCellOccupied, ArrayList<Car> carList, TextField frameLength){
         EventHandler<ActionEvent> event = e -> {
             if(!numberOfCars.getText().matches("\\d+")){
                 Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
                 invalidNumberAlert.setContentText("It must be a natural number!");
                 invalidNumberAlert.show();
             }
+
+            if(!frameLength.getText().matches("\\d*\\.?\\d+")){
+                Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
+                invalidNumberAlert.setContentText("It must be a positive number!");
+                invalidNumberAlert.show();
+            }
+
             setEndPoints(listOfSquares);
             try {
-                carMovement(Integer.parseInt(numberOfCars.getText()), listOfSquares, probability, timeline, isCellOccupied, carList);
+                carMovement(Integer.parseInt(numberOfCars.getText()), listOfSquares, probability, timeline,
+                        isCellOccupied, carList, Double.parseDouble(frameLength.getText()));
             }
-            catch (InterruptedException | NumberFormatException ex) {
-                System.out.println("Some exception from carMovement method");
-                ex.printStackTrace();
-            }
+            catch (InterruptedException | NumberFormatException ignored) {}
 
         };
         submitButton.setOnAction(event);
@@ -382,20 +387,20 @@ public class Controller {
      * @param listOfSquares list of printed squares
      * @param probability probability of car's sudden stop*/
     private static void carMovement(int numberOfCars, ArrayList<Square> listOfSquares, AtomicReference<Double> probability,
-                                    Timeline timeline, boolean[][] isCellOccupied, ArrayList<Car> carList) throws InterruptedException {
+                                    Timeline timeline, boolean[][] isCellOccupied, ArrayList<Car> carList, double frameLength) throws InterruptedException {
 
+        carList.clear();
         for (int i = 0; i < numberOfCars; i++) {
             Car newCar = new Car(5, 0, 0);
             carList.add(newCar);
         }
-        System.out.println(carList.size());
 
         timeline.setCycleCount(Timeline.INDEFINITE);
-        ListIterator<Car> car = carList.listIterator();
+//        ListIterator<Car> car = carList.listIterator();
 
-        while(car.hasNext()){
+        for(Car currentCar: carList){
             AtomicReference<Boolean> reachedDeadEnd = new AtomicReference<>(false);
-            Car currentCar = car.next();
+//            Car currentCar = car.next();
 
             KeyFrame initializeVelocityFrame = new KeyFrame(Duration.ZERO, event -> {
                 Random random = new Random();
@@ -409,24 +414,24 @@ public class Controller {
             });
             timeline.getKeyFrames().add(initializeVelocityFrame);
 
-            KeyFrame iterationKeyframe = new KeyFrame(Duration.seconds(1),
+            KeyFrame iterationKeyframe = new KeyFrame(Duration.seconds(frameLength/3),
                     e -> iterateInTimeFrame(listOfSquares, currentCar, timeline, reachedDeadEnd, isCellOccupied, carList));
             timeline.getKeyFrames().add(iterationKeyframe);
 
-            KeyFrame stopAnimationKeyFrame = new KeyFrame(Duration.seconds(2), event -> {
+            KeyFrame stopAnimationKeyFrame = new KeyFrame(Duration.seconds(frameLength*2/3), event -> {
                 if (currentCar == null) {
-                    System.out.println("Stop");
                     timeline.stop();
                     timeline.getKeyFrames().clear();
                 }
             });
             timeline.getKeyFrames().add(stopAnimationKeyFrame);
 
-            KeyFrame drawCarsKeyFrame = new KeyFrame(Duration.seconds(3), event ->{
+            KeyFrame drawCarsKeyFrame = new KeyFrame(Duration.seconds(frameLength), event -> {
                     if(!reachedDeadEnd.get() && !(currentCar.getX() == 5 && currentCar.getY() == 0)) {
                         isCellOccupied[currentCar.getX()][currentCar.getY()] = true;
                         ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.ORANGE);
                     }
+                    System.out.println(carList.size());
             });
             timeline.getKeyFrames().add(drawCarsKeyFrame);
             timeline.play();
@@ -481,12 +486,16 @@ public class Controller {
                 reachedDeadEnd.set(true);
 //                    car.next();
 //                    car.remove();
-                System.out.println("Removed car");
+                System.out.println("Removed car from cooredinates: "+ currentX+", "+currentY);
 //                    return;
                 if(!isAnyCellOccupied(isCellOccupied)){
                     System.out.println("No cells occupied");
+                    listOfSquares.get(5*nodesInRow).setColor(Color.RED);
                     timeline.stop();
                     timeline.getKeyFrames().removeAll();
+                    listOfCars.clear();
+                    timeline.getKeyFrames().clear();
+                    return;
                 }
 
 
@@ -542,11 +551,14 @@ public class Controller {
                              boolean[][]isCellOccupied, ArrayList<Car> carList){
         EventHandler<ActionEvent> event = e -> {
             timeline.stop();
-            timeline.getKeyFrames().removeAll();
+            timeline.jumpTo(Duration.ZERO);
+            timeline.getKeyFrames().clear();
+
             for (Square currentSquare : listOfSquares) {
                 currentSquare.setColor(Color.GREEN);
                 currentSquare.resetDirection();
             }
+
             listOfSquares.get(5*nodesInRow).setColor(Color.RED);
 
             for (boolean[] booleans : isCellOccupied) {
@@ -558,5 +570,22 @@ public class Controller {
         resetButton.setOnAction(event);
     }
 
+    static void onPauseClick(Button pauseButton, Timeline timeline){
+        EventHandler<ActionEvent> event = e -> {
+            if(timeline != null) {
+                timeline.stop();
+            }
+        };
+        pauseButton.setOnAction(event);
+    }
+
+    static void onStartClick(Button pauseButton, Timeline timeline){
+        EventHandler<ActionEvent> event = e -> {
+            if(timeline != null) {
+                timeline.play();
+            }
+        };
+        pauseButton.setOnAction(event);
+    }
 
 }

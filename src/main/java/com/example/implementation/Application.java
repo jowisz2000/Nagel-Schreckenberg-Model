@@ -55,23 +55,30 @@ public class Application extends javafx.application.Application {
 
         setLegendText();
 
-        Slider probabilityOfStopSlider = initializeProbabilitySlider();
-
         TextField numberOfCars = initializeNumberOfCars();
-        group.getChildren().add(numberOfCars);
 
+
+        Slider probabilityOfStopSlider = initializeProbabilitySlider();
         AtomicReference<Double> probability = new AtomicReference<>(0.0);
         Controller.handleProbability(probability, probabilityOfStopSlider);
+
+        TextField timeFrameLength = initializeTimeFrame();
 
         Timeline timeline = new Timeline();
         boolean[][] isCellOccupied = new boolean[nodesInColumn][nodesInRow];
         ArrayList<Car> carList = new ArrayList<>();
 
         Button submitButton = initializeSubmitButton();
-        Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied, carList);
+        Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied, carList, timeFrameLength);
 
         Button resetButton = initializeResetButton();
         Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList);
+
+        Button pauseButton = initializePauseButton();
+        Controller.onPauseClick(pauseButton, timeline);
+
+        Button startButton = initializeStartButton();
+        Controller.onStartClick(startButton, timeline);
     }
 
 /** method that creates slider that sets probability of braking*/
@@ -94,8 +101,10 @@ public class Application extends javafx.application.Application {
     /** methods that creates field to set up number of cars */
     private static TextField initializeNumberOfCars(){
         TextField numberOfCars = new TextField();
-        numberOfCars.setTranslateX(330);
+        numberOfCars.setTranslateX(370);
         numberOfCars.setTranslateY(40);
+        numberOfCars.setPrefWidth(40);
+        group.getChildren().add(numberOfCars);
         Text numberOfCarsText = new Text("Set up number of cars");
         numberOfCarsText.setTranslateX(330);
         numberOfCarsText.setTranslateY(30);
@@ -111,7 +120,7 @@ public class Application extends javafx.application.Application {
                 Green square: road,
                 Pink square: end point,
                 Orange: car""");
-        legend.setTranslateX(650);
+        legend.setTranslateX(750);
         legend.setTranslateY(30);
         group.getChildren().add(legend);
     }
@@ -120,7 +129,7 @@ public class Application extends javafx.application.Application {
     private static Button initializeSubmitButton(){
         Button submitButton = new Button();
         submitButton.setText("Submit");
-        submitButton.setTranslateX(370);
+        submitButton.setTranslateX(360);
         submitButton.setTranslateY(80);
         Application.group.getChildren().add(submitButton);
         return submitButton;
@@ -129,10 +138,41 @@ public class Application extends javafx.application.Application {
     private static Button initializeResetButton(){
         Button submitButton = new Button();
         submitButton.setText("Reset animation");
-        submitButton.setTranslateX(520);
+        submitButton.setTranslateX(490);
         submitButton.setTranslateY(80);
         Application.group.getChildren().add(submitButton);
         return submitButton;
+    }
+
+    private static Button initializePauseButton(){
+        Button pauseButton = new Button();
+        pauseButton.setText("Pause animation");
+        pauseButton.setTranslateX(490);
+        pauseButton.setTranslateY(50);
+        Application.group.getChildren().add(pauseButton);
+        return pauseButton;
+    }
+
+    private static Button initializeStartButton(){
+        Button pauseButton = new Button();
+        pauseButton.setText("Start animation");
+        pauseButton.setTranslateX(490);
+        pauseButton.setTranslateY(20);
+        Application.group.getChildren().add(pauseButton);
+        return pauseButton;
+    }
+
+    private static TextField initializeTimeFrame(){
+        TextField timeFrame = new TextField();
+        timeFrame.setTranslateX(600);
+        timeFrame.setTranslateY(40);
+        timeFrame.setPrefWidth(40);
+        group.getChildren().add(timeFrame);
+        Text numberOfCarsText = new Text("Set up time of one iteration");
+        numberOfCarsText.setTranslateX(600);
+        numberOfCarsText.setTranslateY(30);
+        group.getChildren().add(numberOfCarsText);
+        return timeFrame;
     }
 
     public static void main(String[] args) {
