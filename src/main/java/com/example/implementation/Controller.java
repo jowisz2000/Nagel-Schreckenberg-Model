@@ -601,11 +601,12 @@ public class Controller {
         pauseButton.setOnAction(event);
     }
 
-    private static void updateVelocityChart(AtomicReference<Double> summedVelocity, Car currentCar,  XYChart.Series<String, Number> averageVelocitySeries,
+    private static void updateVelocityChart(AtomicReference<Double> summedVelocity, Car currentCar, XYChart.Series<String, Number> averageVelocitySeries,
                                      int size, AtomicReference<Integer> currentIteration, ArrayList<Car> carList){
 
         if(currentCar.isMoving()) {
             summedVelocity.set(summedVelocity.get() + currentCar.getVelocity());
+            System.out.println(summedVelocity.get()+", "+stillMovingCars(carList));
         }
 
         if(currentIteration.get() % size == size-1){
@@ -614,13 +615,13 @@ public class Controller {
             final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
 
             Date now = new Date();
-            averageVelocitySeries.getData().add(new XYChart.Data<>(simpleDateFormat.format(now), summedVelocity.get()/Controller.stillMovingCars(carList)));
+            averageVelocitySeries.getData().add(new XYChart.Data<>(simpleDateFormat.format(now), summedVelocity.get()/stillMovingCars(carList)));
             summedVelocity.set(0.0);
         }
         currentIteration.set(currentIteration.get()+1);
     }
 
-    private static void updateDensityChart(AtomicReference<Double> summedVelocity, Car currentCar,  XYChart.Series<String, Number> densitySeries,
+    private static void updateDensityChart(AtomicReference<Double> summedVelocity, Car currentCar, XYChart.Series<String, Number> densitySeries,
                                             int size, AtomicReference<Integer> currentIteration, ArrayList<Car> carList, ArrayList<Square> listOfSquares){
 
         if(currentCar.isMoving()) {
@@ -652,7 +653,7 @@ public class Controller {
     private static int lengthOfRoad(ArrayList<Square> listOfSquares){
         int length = 0;
         for(Square currentSquare:listOfSquares){
-            if(colorsOfRoads.contains(currentSquare.getColor())){
+            if(currentSquare.getColor() == Color.BLACK || currentSquare.getColor() == Color.ORANGE){
                 length++;
             }
         }

@@ -72,7 +72,7 @@ public class Application extends javafx.application.Application {
         XYChart.Series<String, Number> averageVelovitySeries = initializeVelocitySeries(averageVelocityChart);
 
         ScatterChart<String, Number> densityChart = initializeDensityChart();
-        XYChart.Series<String, Number> densitySeries = initializeVelocitySeries(densityChart);
+        XYChart.Series<String, Number> densitySeries = initializeDensitySeries(densityChart);
 
         Button submitButton = initializeSubmitButton();
         Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied,
@@ -192,7 +192,7 @@ public class Application extends javafx.application.Application {
         yAxis.setAutoRanging(false);
         final ScatterChart<String, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
         scatterChart.setTranslateX(900);
-        scatterChart.setTranslateY(200);
+        scatterChart.setTranslateY(100);
         scatterChart.setAnimated(false);
         scatterChart.setPrefWidth(300);
         scatterChart.setPrefHeight(250);
@@ -214,11 +214,11 @@ public class Application extends javafx.application.Application {
         yAxis.setLabel("Density");
         yAxis.setLowerBound(0);
         yAxis.setUpperBound(1);
-        yAxis.setTickUnit(1);
+        yAxis.setTickUnit(0.2);
         yAxis.setAutoRanging(false);
         final ScatterChart<String, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
         scatterChart.setTranslateX(900);
-        scatterChart.setTranslateY(500);
+        scatterChart.setTranslateY(400);
         scatterChart.setAnimated(false);
         scatterChart.setPrefWidth(300);
         scatterChart.setPrefHeight(250);
@@ -230,7 +230,7 @@ public class Application extends javafx.application.Application {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         densityChart.setLegendVisible(false);
         densityChart.getData().add(series);
-        series.setName("Average velocity");
+        series.setName("Density");
         return series;
     }
 
