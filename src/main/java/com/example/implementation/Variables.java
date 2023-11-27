@@ -15,4 +15,6 @@ public class Variables {
     public static int nodesInColumn = 20;
     /** value of maximum allowed velocity (squares per time frame) */
     public static int maxVelocity = 5;
+    /** maximum number of points included in graphs */
+    public static int maxPointsInChart = 10;
 }

@@ -3,6 +3,7 @@ package com.example.implementation;
 import javafx.animation.Timeline;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.chart.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
@@ -19,7 +20,7 @@ public class Application extends javafx.application.Application {
     /** group that keeps all elements from interface */
     static Group group = new Group();
     /** scene on which all elements are placed */
-    static Scene scene = new Scene(group, 800, 600);
+    static Scene scene = new Scene(group, 1200, 800);
 
     @Override
     public void start(Stage stage){
@@ -57,7 +58,6 @@ public class Application extends javafx.application.Application {
 
         TextField numberOfCars = initializeNumberOfCars();
 
-
         Slider probabilityOfStopSlider = initializeProbabilitySlider();
         AtomicReference<Double> probability = new AtomicReference<>(0.0);
         Controller.handleProbability(probability, probabilityOfStopSlider);
@@ -68,11 +68,18 @@ public class Application extends javafx.application.Application {
         boolean[][] isCellOccupied = new boolean[nodesInColumn][nodesInRow];
         ArrayList<Car> carList = new ArrayList<>();
 
+        ScatterChart<String, Number> averageVelocityChart = initializeScatterChart();
+        XYChart.Series<String, Number> averageVelovitySeries = initializeVelocitySeries(averageVelocityChart);
+
+        ScatterChart<String, Number> densityChart = initializeDensityChart();
+        XYChart.Series<String, Number> densitySeries = initializeVelocitySeries(densityChart);
+
         Button submitButton = initializeSubmitButton();
-        Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied, carList, timeFrameLength);
+        Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied,
+                carList, timeFrameLength, averageVelovitySeries, densitySeries);
 
         Button resetButton = initializeResetButton();
-        Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList);
+        Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList, averageVelovitySeries, densitySeries);
 
         Button pauseButton = initializePauseButton();
         Controller.onPauseClick(pauseButton, timeline);
@@ -81,7 +88,7 @@ public class Application extends javafx.application.Application {
         Controller.onStartClick(startButton, timeline);
     }
 
-/** method that creates slider that sets probability of braking*/
+/** method that creates slider that sets probability of braking */
     private static Slider initializeProbabilitySlider(){
         Slider probabilityOfStopSlider = new Slider();
         probabilityOfStopSlider.setMin(0);
@@ -120,8 +127,8 @@ public class Application extends javafx.application.Application {
                 Green square: road,
                 Pink square: end point,
                 Orange: car""");
-        legend.setTranslateX(750);
-        legend.setTranslateY(30);
+        legend.setTranslateX(120);
+        legend.setTranslateY(630);
         group.getChildren().add(legend);
     }
 
@@ -173,6 +180,58 @@ public class Application extends javafx.application.Application {
         numberOfCarsText.setTranslateY(30);
         group.getChildren().add(numberOfCarsText);
         return timeFrame;
+    }
+
+    public static ScatterChart<String, Number> initializeScatterChart() {
+        final CategoryAxis xAxis = new CategoryAxis();
+        final NumberAxis yAxis = new NumberAxis();
+        yAxis.setLabel("Average velocity");
+        yAxis.setLowerBound(0);
+        yAxis.setUpperBound(5);
+        yAxis.setTickUnit(1);
+        yAxis.setAutoRanging(false);
+        final ScatterChart<String, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
+        scatterChart.setTranslateX(900);
+        scatterChart.setTranslateY(200);
+        scatterChart.setAnimated(false);
+        scatterChart.setPrefWidth(300);
+        scatterChart.setPrefHeight(250);
+        group.getChildren().add(scatterChart);
+        return scatterChart;
+    }
+
+    private static XYChart.Series<String, Number> initializeVelocitySeries(ScatterChart<String, Number> averageVelocityChart){
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        averageVelocityChart.setLegendVisible(false);
+        averageVelocityChart.getData().add(series);
+        series.setName("Average velocity");
+        return series;
+    }
+
+    public static ScatterChart<String, Number> initializeDensityChart() {
+        final CategoryAxis xAxis = new CategoryAxis();
+        final NumberAxis yAxis = new NumberAxis();
+        yAxis.setLabel("Density");
+        yAxis.setLowerBound(0);
+        yAxis.setUpperBound(1);
+        yAxis.setTickUnit(1);
+        yAxis.setAutoRanging(false);
+        final ScatterChart<String, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
+        scatterChart.setTranslateX(900);
+        scatterChart.setTranslateY(500);
+        scatterChart.setAnimated(false);
+        scatterChart.setPrefWidth(300);
+        scatterChart.setPrefHeight(250);
+        group.getChildren().add(scatterChart);
+        return scatterChart;
+    }
+
+    private static XYChart.Series<String, Number> initializeDensitySeries(ScatterChart<String, Number> densityChart){
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        densityChart.setLegendVisible(false);
+        densityChart.getData().add(series);
+        series.setName("Average velocity");
+        return series;
     }
 
     public static void main(String[] args) {

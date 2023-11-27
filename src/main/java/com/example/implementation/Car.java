@@ -12,10 +12,14 @@ public class Car {
     private int y;
     private Direction direction;
     private int velocity;
+
+    private boolean isMoving;
+
     Car(int x, int y, int velocity){
         this.x=x;
         this.y=y;
         this.velocity=velocity;
+        this.isMoving = true;
     }
 
     public int getX() {
@@ -64,5 +68,13 @@ public class Car {
 
     public void setVelocity(int velocity) {
         this.velocity = velocity;
+    }
+
+    public boolean isMoving() {
+        return isMoving;
+    }
+
+    public void setMoving(boolean moving) {
+        isMoving = moving;
     }
 }
