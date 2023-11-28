@@ -356,7 +356,7 @@ public class Controller {
      * @param probability probability to update
      * @param numberOfCars number of cars used to animation
      * @param listOfSquares all drawn squares
-     * @param submitButton button that is responsible for starting animation*/
+     * @param submitButton button that is responsible for starting animation */
     static void onSubmitClick(AtomicReference<Double> probability, TextField numberOfCars, ArrayList<Square>listOfSquares,
                               Button submitButton, Timeline timeline, boolean[][]isCellOccupied, ArrayList<Car> carList,
                               TextField frameLength, XYChart.Series<String, Number> averageVelocitySeries,
@@ -404,7 +404,7 @@ public class Controller {
 
         timeline.setCycleCount(Timeline.INDEFINITE);
         AtomicReference<Double> summedVelocity = new AtomicReference<>(0.0);
-        AtomicReference<Integer> currentIteration = new AtomicReference<>(0);
+        AtomicReference<Integer> currentIteration = new AtomicReference<>(1);
 
         for(Car currentCar: carList){
             AtomicReference<Boolean> reachedDeadEnd = new AtomicReference<>(false);
@@ -419,7 +419,7 @@ public class Controller {
                 else{
                     currentCar.incrementVelocity();
                 }
-                summedVelocity.set(0.0);
+//                summedVelocity.set(0.0);
             });
             timeline.getKeyFrames().add(initializeVelocityFrame);
 
@@ -443,15 +443,15 @@ public class Controller {
             });
             timeline.getKeyFrames().add(drawCarsKeyFrame);
 
-            KeyFrame addToVelocityChart = new KeyFrame(Duration.seconds(frameLength), event
+            KeyFrame updateCharts = new KeyFrame(Duration.seconds(frameLength), event
                     -> {
-                Controller.updateVelocityChart(summedVelocity, currentCar, averageVelocitySeries, carList.size(), currentIteration, carList);
-                Controller.updateDensityChart(summedVelocity, currentCar, densitySeries, carList.size(), currentIteration, carList, listOfSquares);
+//                Controller.updateVelocityChart(summedVelocity, currentCar, averageVelocitySeries, carList.size(), currentIteration, carList);
+                Controller.updateCharts(summedVelocity, currentCar, densitySeries, averageVelocitySeries, carList.size(), currentIteration, carList, listOfSquares);
         }
             );
-            timeline.getKeyFrames().add(addToVelocityChart);
+            timeline.getKeyFrames().add(updateCharts);
             timeline.play();
-            summedVelocity.set(0.0);
+//            summedVelocity.set(0.0);
         }
     }
 
@@ -601,40 +601,24 @@ public class Controller {
         pauseButton.setOnAction(event);
     }
 
-    private static void updateVelocityChart(AtomicReference<Double> summedVelocity, Car currentCar, XYChart.Series<String, Number> averageVelocitySeries,
-                                     int size, AtomicReference<Integer> currentIteration, ArrayList<Car> carList){
+    private static void updateCharts(AtomicReference<Double> summedVelocity, Car currentCar, XYChart.Series<String, Number> densitySeries,
+                                     XYChart.Series<String, Number> averageVelocitySeries, int size,
+                                     AtomicReference<Integer> currentIteration, ArrayList<Car> carList, ArrayList<Square> listOfSquares){
 
         if(currentCar.isMoving()) {
             summedVelocity.set(summedVelocity.get() + currentCar.getVelocity());
-            System.out.println(summedVelocity.get()+", "+stillMovingCars(carList));
         }
 
-        if(currentIteration.get() % size == size-1){
-            if (averageVelocitySeries.getData().size() > maxPointsInChart)
+        if(currentIteration.get() % size == 0){
+            if (densitySeries.getData().size() > maxPointsInChart) {
                 averageVelocitySeries.getData().remove(0);
-            final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
-
-            Date now = new Date();
-            averageVelocitySeries.getData().add(new XYChart.Data<>(simpleDateFormat.format(now), summedVelocity.get()/stillMovingCars(carList)));
-            summedVelocity.set(0.0);
-        }
-        currentIteration.set(currentIteration.get()+1);
-    }
-
-    private static void updateDensityChart(AtomicReference<Double> summedVelocity, Car currentCar, XYChart.Series<String, Number> densitySeries,
-                                            int size, AtomicReference<Integer> currentIteration, ArrayList<Car> carList, ArrayList<Square> listOfSquares){
-
-        if(currentCar.isMoving()) {
-            summedVelocity.set(summedVelocity.get() + currentCar.getVelocity());
-        }
-
-        if(currentIteration.get() % size == size-1){
-            if (densitySeries.getData().size() > maxPointsInChart)
                 densitySeries.getData().remove(0);
+            }
             final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
 
             Date now = new Date();
             densitySeries.getData().add(new XYChart.Data<>(simpleDateFormat.format(now), 1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares)));
+            averageVelocitySeries.getData().add(new XYChart.Data<>(simpleDateFormat.format(now), summedVelocity.get()/stillMovingCars(carList)));
             summedVelocity.set(0.0);
         }
         currentIteration.set(currentIteration.get()+1);
