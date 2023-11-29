@@ -5,6 +5,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
@@ -20,6 +21,7 @@ public class Application extends javafx.application.Application {
     /** group that keeps all elements from interface */
     static Group group = new Group();
     /** scene on which all elements are placed */
+
     static Scene scene = new Scene(group, 1200, 800);
 
     @Override
@@ -54,6 +56,9 @@ public class Application extends javafx.application.Application {
         Text startPointText = new Text(40, 275, "Start point");
         group.getChildren().add(startPointText);
 
+        Label currentVelocityText = initializeCurrentVelocityText();
+        Label currentDensityText = initializeCurrentDensityText();
+
         setLegendText();
 
         TextField numberOfCars = initializeNumberOfCars();
@@ -76,16 +81,23 @@ public class Application extends javafx.application.Application {
 
         Button submitButton = initializeSubmitButton();
         Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied,
-                carList, timeFrameLength, averageVelovitySeries, densitySeries);
+                carList, timeFrameLength, averageVelovitySeries, densitySeries,currentVelocityText, currentDensityText);
 
         Button resetButton = initializeResetButton();
-        Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList, averageVelovitySeries, densitySeries);
+        Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList, averageVelovitySeries,
+                densitySeries);
 
         Button pauseButton = initializePauseButton();
         Controller.onPauseClick(pauseButton, timeline);
 
         Button startButton = initializeStartButton();
         Controller.onStartClick(startButton, timeline);
+
+        Button saveButton = initializeSaveButton();
+        Controller.onSaveClick(listOfSquares, saveButton);
+
+        Button loadButton = initializeLoadButton();
+        Controller.onLoadClick(listOfSquares, loadButton);
     }
 
 /** method that creates slider that sets probability of braking */
@@ -171,12 +183,12 @@ public class Application extends javafx.application.Application {
 
     private static TextField initializeTimeFrame(){
         TextField timeFrame = new TextField();
-        timeFrame.setTranslateX(600);
+        timeFrame.setTranslateX(780);
         timeFrame.setTranslateY(40);
         timeFrame.setPrefWidth(40);
         group.getChildren().add(timeFrame);
         Text numberOfCarsText = new Text("Set up time of one iteration");
-        numberOfCarsText.setTranslateX(600);
+        numberOfCarsText.setTranslateX(780);
         numberOfCarsText.setTranslateY(30);
         group.getChildren().add(numberOfCarsText);
         return timeFrame;
@@ -232,6 +244,40 @@ public class Application extends javafx.application.Application {
         densityChart.getData().add(series);
         series.setName("Density");
         return series;
+    }
+
+    private static Label initializeCurrentVelocityText(){
+        Label currentVelocityText = new Label("Current velocity: 0.0");
+        currentVelocityText.setTranslateX(950);
+        currentVelocityText.setTranslateY(80);
+        group.getChildren().add(currentVelocityText);
+        return currentVelocityText;
+    }
+
+    private static Label initializeCurrentDensityText(){
+        Label currentDensityText = new Label("Current density: 0.0");
+        currentDensityText.setTranslateX(950);
+        currentDensityText.setTranslateY(380);
+        group.getChildren().add(currentDensityText);
+        return currentDensityText;
+    }
+
+    private static Button initializeSaveButton(){
+        Button renameButton = new Button();
+        renameButton.setText("Save road to file");
+        renameButton.setTranslateX(650);
+        renameButton.setTranslateY(20);
+        Application.group.getChildren().add(renameButton);
+        return renameButton;
+    }
+
+    private static Button initializeLoadButton(){
+        Button loadButton = new Button();
+        loadButton.setText("Load road from file");
+        loadButton.setTranslateX(650);
+        loadButton.setTranslateY(50);
+        Application.group.getChildren().add(loadButton);
+        return loadButton;
     }
 
     public static void main(String[] args) {

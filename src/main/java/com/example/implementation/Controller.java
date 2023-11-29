@@ -12,8 +12,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.robot.Robot;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -360,7 +363,7 @@ public class Controller {
     static void onSubmitClick(AtomicReference<Double> probability, TextField numberOfCars, ArrayList<Square>listOfSquares,
                               Button submitButton, Timeline timeline, boolean[][]isCellOccupied, ArrayList<Car> carList,
                               TextField frameLength, XYChart.Series<String, Number> averageVelocitySeries,
-                              XYChart.Series<String, Number> densitySeries){
+                              XYChart.Series<String, Number> densitySeries, Label currentVelocityText, Label currentDensityText){
         EventHandler<ActionEvent> event = e -> {
             if(!numberOfCars.getText().matches("\\d+")){
                 Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
@@ -377,7 +380,8 @@ public class Controller {
             setEndPoints(listOfSquares);
             try {
                 carMovement(Integer.parseInt(numberOfCars.getText()), listOfSquares, probability, timeline,
-                        isCellOccupied, carList, Double.parseDouble(frameLength.getText()), averageVelocitySeries, densitySeries);
+                        isCellOccupied, carList, Double.parseDouble(frameLength.getText()), averageVelocitySeries,
+                        densitySeries, currentVelocityText, currentDensityText);
             }
             catch (InterruptedException | NumberFormatException ignored) {}
 
@@ -392,7 +396,8 @@ public class Controller {
     private static void carMovement(int numberOfCars, ArrayList<Square> listOfSquares, AtomicReference<Double> probability,
                                     Timeline timeline, boolean[][] isCellOccupied, ArrayList<Car> carList,
                                     double frameLength, XYChart.Series<String, Number> averageVelocitySeries,
-                                    XYChart.Series<String, Number> densitySeries) throws InterruptedException {
+                                    XYChart.Series<String, Number> densitySeries, Label currentVelocityText,
+                                    Label currentDensityText) throws InterruptedException {
 
         carList.clear();
         averageVelocitySeries.getData().clear();
@@ -446,7 +451,8 @@ public class Controller {
             KeyFrame updateCharts = new KeyFrame(Duration.seconds(frameLength), event
                     -> {
 //                Controller.updateVelocityChart(summedVelocity, currentCar, averageVelocitySeries, carList.size(), currentIteration, carList);
-                Controller.updateCharts(summedVelocity, currentCar, densitySeries, averageVelocitySeries, carList.size(), currentIteration, carList, listOfSquares);
+                Controller.updateCharts(summedVelocity, currentCar, densitySeries, averageVelocitySeries, carList.size(),
+                        currentIteration, carList, listOfSquares, currentVelocityText, currentDensityText);
         }
             );
             timeline.getKeyFrames().add(updateCharts);
@@ -603,7 +609,8 @@ public class Controller {
 
     private static void updateCharts(AtomicReference<Double> summedVelocity, Car currentCar, XYChart.Series<String, Number> densitySeries,
                                      XYChart.Series<String, Number> averageVelocitySeries, int size,
-                                     AtomicReference<Integer> currentIteration, ArrayList<Car> carList, ArrayList<Square> listOfSquares){
+                                     AtomicReference<Integer> currentIteration, ArrayList<Car> carList,
+                                     ArrayList<Square> listOfSquares, Label currentVelocityText, Label currentDensityText){
 
         if(currentCar.isMoving()) {
             summedVelocity.set(summedVelocity.get() + currentCar.getVelocity());
@@ -619,6 +626,9 @@ public class Controller {
             Date now = new Date();
             densitySeries.getData().add(new XYChart.Data<>(simpleDateFormat.format(now), 1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares)));
             averageVelocitySeries.getData().add(new XYChart.Data<>(simpleDateFormat.format(now), summedVelocity.get()/stillMovingCars(carList)));
+
+            currentDensityText.setText("Current density = "+1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares));
+            currentVelocityText.setText("All velocities: "+summedVelocity.get()+", number of moving cars: "+stillMovingCars(carList));
             summedVelocity.set(0.0);
         }
         currentIteration.set(currentIteration.get()+1);
@@ -642,5 +652,54 @@ public class Controller {
             }
         }
         return length;
+    }
+    static void onSaveClick(ArrayList<Square> listOfSquares, Button saveButton){
+        EventHandler<ActionEvent> event = e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save road configuration");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Data Files", "*.dat"));
+            File selectedFile = fileChooser.showSaveDialog(null);
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(selectedFile.getAbsolutePath()))) {
+                for (int i=0; i<listOfSquares.size(); i++) {
+                    if(listOfSquares.get(i).getColor() != Color.GREEN){
+                        StringBuilder allDirections = new StringBuilder();
+                        for(Direction direction: listOfSquares.get(i).getPossibleDirections()){
+                            allDirections.append(direction).append(" ");
+                        }
+                        writer.write(i+" "+allDirections);
+                        writer.newLine();
+                    }
+                }
+                System.out.println("Coordinates saved to file.");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        };
+        saveButton.setOnAction(event);
+    }
+
+    public static void onLoadClick(ArrayList<Square> listOfSquares, Button loadButton) {
+        EventHandler<ActionEvent> event = e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Choose road configuration");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Data Files", "*.dat"));
+            try {
+                File selectedFile = fileChooser.showOpenDialog(null);
+                FileInputStream fis = new FileInputStream(selectedFile.getAbsolutePath());
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                ArrayList<Square> obj = (ArrayList<Square>) ois.readObject();
+                System.out.println(obj.equals(listOfSquares));
+
+                System.out.println(obj.equals(listOfSquares));
+                for(int i=0; i<listOfSquares.size(); i++){
+                    listOfSquares.set(i, obj.get(i));
+                    group.getChildren().set(i, obj.get(i).getRectangle());
+                }
+            } catch (IOException | ClassNotFoundException g) {
+                g.printStackTrace();
+            }
+        };
+        loadButton.setOnAction(event);
     }
 }
