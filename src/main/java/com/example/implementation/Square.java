@@ -9,10 +9,14 @@ import java.util.HashSet;
 /** represents single square that is drawn on interface */
 public class Square{
     private final Rectangle rectangle;
-    private final HashSet<Direction> possibleDirections;
+    private HashSet<Direction> possibleDirections;
 
     public HashSet<Direction> getPossibleDirections() {
         return possibleDirections;
+    }
+
+    public void setPossibleDirections(HashSet<Direction> possibleDirections) {
+        this.possibleDirections = possibleDirections;
     }
 
     public void addDirection(Direction direction){

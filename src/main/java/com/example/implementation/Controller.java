@@ -363,12 +363,27 @@ public class Controller {
     static void onSubmitClick(AtomicReference<Double> probability, TextField numberOfCars, ArrayList<Square>listOfSquares,
                               Button submitButton, Timeline timeline, boolean[][]isCellOccupied, ArrayList<Car> carList,
                               TextField frameLength, XYChart.Series<String, Number> averageVelocitySeries,
-                              XYChart.Series<String, Number> densitySeries, Label currentVelocityText, Label currentDensityText){
+                              XYChart.Series<String, Number> densitySeries, Label currentVelocityText, Label currentDensityText,
+                              ChoiceBox<String> determineNumberOfCars){
         EventHandler<ActionEvent> event = e -> {
-            if(!numberOfCars.getText().matches("\\d+")){
-                Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
-                invalidNumberAlert.setContentText("It must be a natural number!");
-                invalidNumberAlert.show();
+
+            int actualNumberOfCars = 0;
+
+            if(determineNumberOfCars.getValue().equals("Number of cars")) {
+                if (!numberOfCars.getText().matches("\\d+")) {
+                    Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
+                    invalidNumberAlert.setContentText("It must be a natural number!");
+                    invalidNumberAlert.show();
+                }
+                actualNumberOfCars = Integer.parseInt(numberOfCars.getText());
+            }
+            else{
+                if (!numberOfCars.getText().matches("^(0(?:\\.\\d+)?|1(?:\\.0+)?)$")) {
+                    Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
+                    invalidNumberAlert.setContentText("It must be a number from 0 to 1!");
+                    invalidNumberAlert.show();
+                }
+                actualNumberOfCars = (int) (Double.parseDouble(numberOfCars.getText())*lengthOfRoad(listOfSquares));
             }
 
             if(!frameLength.getText().matches("\\d*\\.?\\d+")){
@@ -379,11 +394,11 @@ public class Controller {
 
             setEndPoints(listOfSquares);
             try {
-                carMovement(Integer.parseInt(numberOfCars.getText()), listOfSquares, probability, timeline,
+                carMovement(actualNumberOfCars, listOfSquares, probability, timeline,
                         isCellOccupied, carList, Double.parseDouble(frameLength.getText()), averageVelocitySeries,
                         densitySeries, currentVelocityText, currentDensityText);
             }
-            catch (InterruptedException | NumberFormatException ignored) {}
+            catch (InterruptedException | NumberFormatException | ArithmeticException ignored) {}
 
         };
         submitButton.setOnAction(event);
@@ -628,7 +643,7 @@ public class Controller {
             averageVelocitySeries.getData().add(new XYChart.Data<>(simpleDateFormat.format(now), summedVelocity.get()/stillMovingCars(carList)));
 
             currentDensityText.setText("Current density = "+1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares));
-            currentVelocityText.setText("All velocities: "+summedVelocity.get()+", number of moving cars: "+stillMovingCars(carList));
+            currentVelocityText.setText("Current average velocity: "+summedVelocity.get()/stillMovingCars(carList));
             summedVelocity.set(0.0);
         }
         currentIteration.set(currentIteration.get()+1);
@@ -686,17 +701,28 @@ public class Controller {
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Data Files", "*.dat"));
             try {
                 File selectedFile = fileChooser.showOpenDialog(null);
-                FileInputStream fis = new FileInputStream(selectedFile.getAbsolutePath());
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                ArrayList<Square> obj = (ArrayList<Square>) ois.readObject();
-                System.out.println(obj.equals(listOfSquares));
+//                FileInputStream fis = new FileInputStream(selectedFile.getAbsolutePath());
+//                ObjectInputStream ois = new ObjectInputStream(fis);
+//                ArrayList<Square> obj = (ArrayList<Square>) ois.readObject();
+//                System.out.println(obj.equals(listOfSquares));
 
-                System.out.println(obj.equals(listOfSquares));
-                for(int i=0; i<listOfSquares.size(); i++){
-                    listOfSquares.set(i, obj.get(i));
-                    group.getChildren().set(i, obj.get(i).getRectangle());
+                Scanner scanner = new Scanner(new File(selectedFile.getAbsolutePath()));
+
+                while(scanner.hasNextLine()){
+                    String currentSquare = scanner.nextLine();
+                    String[] splitInformation = currentSquare.split(" ");
+                    int index = Integer.parseInt(splitInformation[0]);
+
+                    HashSet<Direction> loadedDirections = new HashSet<>();
+                    for(int i=1; i<splitInformation.length; i++){
+                        loadedDirections.add(Direction.valueOf(splitInformation[i]));
+                    }
+
+                    listOfSquares.get(index).setColor(Color.BLACK);
+                    listOfSquares.get(index).setPossibleDirections(loadedDirections);
                 }
-            } catch (IOException | ClassNotFoundException g) {
+
+            } catch (IOException g) {
                 g.printStackTrace();
             }
         };

@@ -1,13 +1,11 @@
 package com.example.implementation;
 
 import javafx.animation.Timeline;
+import javafx.collections.FXCollections;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -59,6 +57,9 @@ public class Application extends javafx.application.Application {
         Label currentVelocityText = initializeCurrentVelocityText();
         Label currentDensityText = initializeCurrentDensityText();
 
+
+        ChoiceBox<String> determineNumberOfCars = initializeChoiceBox();
+
         setLegendText();
 
         TextField numberOfCars = initializeNumberOfCars();
@@ -81,7 +82,8 @@ public class Application extends javafx.application.Application {
 
         Button submitButton = initializeSubmitButton();
         Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied,
-                carList, timeFrameLength, averageVelovitySeries, densitySeries,currentVelocityText, currentDensityText);
+                carList, timeFrameLength, averageVelovitySeries, densitySeries,currentVelocityText, currentDensityText,
+                determineNumberOfCars);
 
         Button resetButton = initializeResetButton();
         Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList, averageVelovitySeries,
@@ -97,10 +99,12 @@ public class Application extends javafx.application.Application {
         Controller.onSaveClick(listOfSquares, saveButton);
 
         Button loadButton = initializeLoadButton();
+        Controller.onResetClick(loadButton, listOfSquares, timeline, isCellOccupied, carList, averageVelovitySeries,
+                densitySeries);
         Controller.onLoadClick(listOfSquares, loadButton);
     }
 
-/** method that creates slider that sets probability of braking */
+    /** method that creates slider that sets probability of braking */
     private static Slider initializeProbabilitySlider(){
         Slider probabilityOfStopSlider = new Slider();
         probabilityOfStopSlider.setMin(0);
@@ -121,13 +125,13 @@ public class Application extends javafx.application.Application {
     private static TextField initializeNumberOfCars(){
         TextField numberOfCars = new TextField();
         numberOfCars.setTranslateX(370);
-        numberOfCars.setTranslateY(40);
-        numberOfCars.setPrefWidth(40);
+        numberOfCars.setTranslateY(45);
+        numberOfCars.setPrefWidth(120);
         group.getChildren().add(numberOfCars);
-        Text numberOfCarsText = new Text("Set up number of cars");
-        numberOfCarsText.setTranslateX(330);
-        numberOfCarsText.setTranslateY(30);
-        group.getChildren().add(numberOfCarsText);
+        Label l = new Label("Choose option to determine number of cars");
+        group.getChildren().add(l);
+        l.setTranslateX(370);
+        l.setTranslateY(20);
         return numberOfCars;
     }
 
@@ -147,49 +151,53 @@ public class Application extends javafx.application.Application {
     /** method that initializes up legend */
     private static Button initializeSubmitButton(){
         Button submitButton = new Button();
-        submitButton.setText("Submit");
-        submitButton.setTranslateX(360);
+        submitButton.setText("Start animation");
+        submitButton.setTranslateX(370);
         submitButton.setTranslateY(80);
+        submitButton.setPrefWidth(120);
         Application.group.getChildren().add(submitButton);
         return submitButton;
     }
 
     private static Button initializeResetButton(){
-        Button submitButton = new Button();
-        submitButton.setText("Reset animation");
-        submitButton.setTranslateX(490);
-        submitButton.setTranslateY(80);
-        Application.group.getChildren().add(submitButton);
-        return submitButton;
+        Button resetButton = new Button();
+        resetButton.setText("Reset animation");
+        resetButton.setTranslateX(290);
+        resetButton.setTranslateY(680);
+        resetButton.setPrefWidth(120);
+        Application.group.getChildren().add(resetButton);
+        return resetButton;
     }
 
     private static Button initializePauseButton(){
         Button pauseButton = new Button();
         pauseButton.setText("Pause animation");
-        pauseButton.setTranslateX(490);
-        pauseButton.setTranslateY(50);
+        pauseButton.setTranslateX(290);
+        pauseButton.setTranslateY(650);
+        pauseButton.setPrefWidth(120);
         Application.group.getChildren().add(pauseButton);
         return pauseButton;
     }
 
     private static Button initializeStartButton(){
         Button pauseButton = new Button();
-        pauseButton.setText("Start animation");
-        pauseButton.setTranslateX(490);
-        pauseButton.setTranslateY(20);
+        pauseButton.setText("Play animation");
+        pauseButton.setTranslateX(290);
+        pauseButton.setTranslateY(620);
+        pauseButton.setPrefWidth(120);
         Application.group.getChildren().add(pauseButton);
         return pauseButton;
     }
 
     private static TextField initializeTimeFrame(){
         TextField timeFrame = new TextField();
-        timeFrame.setTranslateX(780);
-        timeFrame.setTranslateY(40);
-        timeFrame.setPrefWidth(40);
+        timeFrame.setTranslateX(750);
+        timeFrame.setTranslateY(50);
+        timeFrame.setPrefWidth(120);
         group.getChildren().add(timeFrame);
         Text numberOfCarsText = new Text("Set up time of one iteration");
-        numberOfCarsText.setTranslateX(780);
-        numberOfCarsText.setTranslateY(30);
+        numberOfCarsText.setTranslateX(740);
+        numberOfCarsText.setTranslateY(40);
         group.getChildren().add(numberOfCarsText);
         return timeFrame;
     }
@@ -263,21 +271,34 @@ public class Application extends javafx.application.Application {
     }
 
     private static Button initializeSaveButton(){
-        Button renameButton = new Button();
-        renameButton.setText("Save road to file");
-        renameButton.setTranslateX(650);
-        renameButton.setTranslateY(20);
-        Application.group.getChildren().add(renameButton);
-        return renameButton;
+        Button saveButton = new Button();
+        saveButton.setText("Save road to file");
+        saveButton.setTranslateX(460);
+        saveButton.setTranslateY(620);
+        saveButton.setPrefWidth(120);
+        Application.group.getChildren().add(saveButton);
+        return saveButton;
     }
 
     private static Button initializeLoadButton(){
         Button loadButton = new Button();
         loadButton.setText("Load road from file");
-        loadButton.setTranslateX(650);
-        loadButton.setTranslateY(50);
+        loadButton.setTranslateX(460);
+        loadButton.setTranslateY(650);
+        loadButton.setPrefWidth(120);
         Application.group.getChildren().add(loadButton);
         return loadButton;
+    }
+
+    private static ChoiceBox<String> initializeChoiceBox() {
+        ArrayList<String> options = new ArrayList<>();
+        options.add("Number of cars");
+        options.add("Density");
+        ChoiceBox<String> choiceBox = new ChoiceBox<>(FXCollections.observableArrayList(options));
+        group.getChildren().add(choiceBox);
+        choiceBox.setTranslateX(500);
+        choiceBox.setTranslateY(45);
+        return choiceBox;
     }
 
     public static void main(String[] args) {
