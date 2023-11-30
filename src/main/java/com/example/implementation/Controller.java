@@ -367,7 +367,7 @@ public class Controller {
                               ChoiceBox<String> determineNumberOfCars){
         EventHandler<ActionEvent> event = e -> {
 
-            int actualNumberOfCars = 0;
+            int actualNumberOfCars;
 
             if(determineNumberOfCars.getValue().equals("Number of cars")) {
                 if (!numberOfCars.getText().matches("\\d+")) {
@@ -701,10 +701,6 @@ public class Controller {
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Data Files", "*.dat"));
             try {
                 File selectedFile = fileChooser.showOpenDialog(null);
-//                FileInputStream fis = new FileInputStream(selectedFile.getAbsolutePath());
-//                ObjectInputStream ois = new ObjectInputStream(fis);
-//                ArrayList<Square> obj = (ArrayList<Square>) ois.readObject();
-//                System.out.println(obj.equals(listOfSquares));
 
                 Scanner scanner = new Scanner(new File(selectedFile.getAbsolutePath()));
 
