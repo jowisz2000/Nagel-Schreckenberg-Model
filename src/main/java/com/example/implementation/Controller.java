@@ -13,6 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.robot.Robot;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -365,14 +366,11 @@ public class Controller {
                               Button submitButton, Timeline timeline, boolean[][]isCellOccupied, ArrayList<Car> carList,
                               TextField frameLength, XYChart.Series<Number, Number> averageVelocitySeries,
                               XYChart.Series<Number, Number> densitySeries, Label currentVelocityText, Label currentDensityText,
-                              ChoiceBox<String> determineNumberOfCars, Slider probabilityOfStopSlider){
+                              ChoiceBox<String> determineNumberOfCars, Slider probabilityOfStopSlider, TextField maxVelocity){
         EventHandler<ActionEvent> event = e -> {
             System.out.println(timeline.getStatus());
 
             if(timeline.getStatus() == Animation.Status.RUNNING){
-                numberOfCars.setDisable(false);
-                frameLength.setDisable(false);
-                probabilityOfStopSlider.setDisable(false);
                 timeline.stop();
                 return;
             }
@@ -384,8 +382,10 @@ public class Controller {
             numberOfCars.setDisable(true);
             frameLength.setDisable(true);
             probabilityOfStopSlider.setDisable(true);
+            maxVelocity.setDisable(true);
 
             int actualNumberOfCars;
+            int actualMaxVelocity;
 
             if(determineNumberOfCars.getValue().equals("Number of cars")) {
                 if (!numberOfCars.getText().matches("\\d+")) {
@@ -410,10 +410,19 @@ public class Controller {
                 invalidNumberAlert.show();
             }
 
+            if (!maxVelocity.getText().matches("\\d+")) {
+                Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
+                invalidNumberAlert.setContentText("It must be a natural number!");
+                invalidNumberAlert.show();
+            }
+            actualMaxVelocity = Integer.parseInt(maxVelocity.getText());
+
+            averageVelocitySeries.getChart().getYAxis().setAutoRanging(true);
+
             setEndPoints(listOfSquares);
             try {
-                carMovement(actualNumberOfCars, listOfSquares, probability, timeline,
-                        isCellOccupied, carList, Double.parseDouble(frameLength.getText()), averageVelocitySeries,
+                carMovement(numberOfCars, maxVelocity, listOfSquares, probability, timeline,
+                        isCellOccupied, carList, frameLength, averageVelocitySeries,
                         densitySeries, currentVelocityText, currentDensityText);
             }
             catch (InterruptedException | NumberFormatException | ArithmeticException ignored) {}
@@ -426,16 +435,16 @@ public class Controller {
      * @param numberOfCars number of cars used in animation
      * @param listOfSquares list of printed squares
      * @param probability probability of car's sudden stop*/
-    private static void carMovement(int numberOfCars, ArrayList<Square> listOfSquares, AtomicReference<Double> probability,
+    private static void carMovement(TextField numberOfCars, TextField maxVelocity, ArrayList<Square> listOfSquares, AtomicReference<Double> probability,
                                     Timeline timeline, boolean[][] isCellOccupied, ArrayList<Car> carList,
-                                    double frameLength, XYChart.Series<Number, Number> averageVelocitySeries,
+                                    TextField frameLengthText, XYChart.Series<Number, Number> averageVelocitySeries,
                                     XYChart.Series<Number, Number> densitySeries, Label currentVelocityText,
                                     Label currentDensityText) throws InterruptedException {
 
         carList.clear();
         averageVelocitySeries.getData().clear();
         densitySeries.getData().clear();
-        for (int i = 0; i < numberOfCars; i++) {
+        for (int i = 0; i < Integer.parseInt(numberOfCars.getText()); i++) {
             Car newCar = new Car(5, 0, 0);
             carList.add(newCar);
         }
@@ -443,6 +452,7 @@ public class Controller {
         timeline.setCycleCount(Timeline.INDEFINITE);
         AtomicReference<Double> summedVelocity = new AtomicReference<>(0.0);
         AtomicReference<Integer> currentIteration = new AtomicReference<>(1);
+        Double frameLength = Double.parseDouble(frameLengthText.getText());
 
         for(Car currentCar: carList){
             AtomicReference<Boolean> reachedDeadEnd = new AtomicReference<>(false);
@@ -455,14 +465,14 @@ public class Controller {
                     currentCar.decrementVelocity();
                 }
                 else{
-                    currentCar.incrementVelocity();
+                    currentCar.incrementVelocity(Integer.parseInt(maxVelocity.getText()));
                 }
-//                summedVelocity.set(0.0);
             });
             timeline.getKeyFrames().add(initializeVelocityFrame);
 
             KeyFrame iterationKeyframe = new KeyFrame(Duration.seconds(frameLength/4),
-                    e -> iterateInTimeFrame(listOfSquares, currentCar, timeline, reachedDeadEnd, isCellOccupied, carList));
+                    e -> iterateInTimeFrame(listOfSquares, currentCar, timeline, reachedDeadEnd, isCellOccupied, carList,
+                            numberOfCars, frameLengthText, maxVelocity));
             timeline.getKeyFrames().add(iterationKeyframe);
 
             KeyFrame stopAnimationKeyFrame = new KeyFrame(Duration.seconds(frameLength/2), event -> {
@@ -496,7 +506,9 @@ public class Controller {
  * @param timeline holds all animation KeyFrames
  * @param isCellOccupied 2D array of booleans that tells whether cell is occupied by car
  * @param reachedDeadEnd describes if car reached dead end */
-    private static void iterateInTimeFrame(ArrayList<Square> listOfSquares, Car currentCar, Timeline timeline, AtomicReference<Boolean> reachedDeadEnd, boolean[][] isCellOccupied, ArrayList<Car> listOfCars){
+    private static void iterateInTimeFrame(ArrayList<Square> listOfSquares, Car currentCar, Timeline timeline,
+                                           AtomicReference<Boolean> reachedDeadEnd, boolean[][] isCellOccupied,
+                                           ArrayList<Car> listOfCars, TextField numberOfCars, TextField frameLength, TextField maxVelocity){
         int currentX = currentCar.getX();
         int currentY = currentCar.getY();
         int checkedBoxes = 0;
@@ -545,6 +557,9 @@ public class Controller {
                     timeline.stop();
                     timeline.getKeyFrames().clear();
                     listOfCars.clear();
+                    numberOfCars.setDisable(false);
+                    frameLength.setDisable(false);
+                    maxVelocity.setDisable(false);
                     return;
                 }
                 ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.BLACK);
@@ -598,7 +613,7 @@ public class Controller {
     static void onResetClick(Button resetButton, ArrayList<Square> listOfSquares, Timeline timeline,
                              boolean[][]isCellOccupied, ArrayList<Car> carList, XYChart.Series<Number, Number> averageVelocitySeries,
                              XYChart.Series<Number, Number> densitySeries, TextField numberOfCars, TextField frameLength,
-                             Slider probabilityOfStopSlider){
+                             Slider probabilityOfStopSlider, TextField maxVelocity){
         EventHandler<ActionEvent> event = e -> {
             averageVelocitySeries.getData().clear();
             densitySeries.getData().clear();
@@ -609,6 +624,7 @@ public class Controller {
             numberOfCars.setDisable(false);
             frameLength.setDisable(false);
             probabilityOfStopSlider.setDisable(false);
+            maxVelocity.setDisable(false);
 
             for (Square currentSquare : listOfSquares) {
                 currentSquare.setColor(Color.GREEN);
@@ -692,9 +708,7 @@ public class Controller {
                     }
                 }
                 System.out.println("Coordinates saved to file.");
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            } catch (IOException | NullPointerException ignored) {}
         };
         saveButton.setOnAction(event);
     }
@@ -723,8 +737,8 @@ public class Controller {
                     listOfSquares.get(index).setPossibleDirections(loadedDirections);
                 }
 
-            } catch (IOException g) {
-                g.printStackTrace();
+            } catch (IOException | NullPointerException ignored) {
+
             }
         };
         loadButton.setOnAction(event);

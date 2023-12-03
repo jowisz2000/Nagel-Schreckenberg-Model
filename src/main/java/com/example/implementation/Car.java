@@ -3,8 +3,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-
-import static com.example.implementation.Variables.maxVelocity;
 import static com.example.implementation.Variables.nodesInRow;
 
 public class Car {
@@ -58,7 +56,7 @@ public class Car {
         return velocity;
     }
 
-    public void incrementVelocity(){
+    public void incrementVelocity(int maxVelocity){
         if(this.velocity < maxVelocity) this.velocity++;
     }
 

@@ -76,6 +76,8 @@ public class Application extends javafx.application.Application {
         boolean[][] isCellOccupied = new boolean[nodesInColumn][nodesInRow];
         ArrayList<Car> carList = new ArrayList<>();
 
+        TextField maxVelocity = initializeMaxVelocity();
+
         ScatterChart<Number, Number> averageVelocityChart = initializeScatterChart();
         XYChart.Series<Number, Number> averageVelocitySeries = initializeVelocitySeries(averageVelocityChart);
 
@@ -85,20 +87,21 @@ public class Application extends javafx.application.Application {
         Button submitButton = initializeSubmitButton();
         Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied,
                 carList, timeFrameLength, averageVelocitySeries, densitySeries,currentVelocityText, currentDensityText,
-                determineNumberOfCars, probabilityOfStopSlider);
+                determineNumberOfCars, probabilityOfStopSlider, maxVelocity);
 
         Button resetButton = initializeResetButton();
         Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries,
-                densitySeries, numberOfCars, timeFrameLength, probabilityOfStopSlider);
+                densitySeries, numberOfCars, timeFrameLength, probabilityOfStopSlider, maxVelocity);
 
         Button saveButton = initializeSaveButton();
         Controller.onSaveClick(listOfSquares, saveButton);
 
         Button loadButton = initializeLoadButton();
         Controller.onResetClick(loadButton, listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries,
-                densitySeries, numberOfCars, timeFrameLength, probabilityOfStopSlider);
+                densitySeries, numberOfCars, timeFrameLength, probabilityOfStopSlider, maxVelocity);
         Controller.onLoadClick(listOfSquares, loadButton);
     }
+
 
     /** method that creates slider that sets probability of braking */
     private static Slider initializeProbabilitySlider(){
@@ -166,13 +169,13 @@ public class Application extends javafx.application.Application {
     }
     private static TextField initializeTimeFrame(){
         TextField timeFrame = new TextField();
-        timeFrame.setTranslateX(750);
-        timeFrame.setTranslateY(50);
+        timeFrame.setTranslateX(650);
+        timeFrame.setTranslateY(45);
         timeFrame.setPrefWidth(120);
         group.getChildren().add(timeFrame);
         Text numberOfCarsText = new Text("Set up time of one iteration");
-        numberOfCarsText.setTranslateX(740);
-        numberOfCarsText.setTranslateY(40);
+        numberOfCarsText.setTranslateX(640);
+        numberOfCarsText.setTranslateY(35);
         group.getChildren().add(numberOfCarsText);
         return timeFrame;
     }
@@ -265,7 +268,7 @@ public class Application extends javafx.application.Application {
         return loadButton;
     }
 
-    private static ChoiceBox<String> initializeChoiceBox() {
+    private static ChoiceBox<String> initializeChoiceBox(){
         ArrayList<String> options = new ArrayList<>();
         options.add("Number of cars");
         options.add("Density");
@@ -275,6 +278,19 @@ public class Application extends javafx.application.Application {
         choiceBox.setTranslateY(45);
         choiceBox.setValue("Number of cars");
         return choiceBox;
+    }
+
+    private static TextField initializeMaxVelocity() {
+        TextField maxVelocity = new TextField();
+        maxVelocity.setTranslateX(820);
+        maxVelocity.setTranslateY(45);
+        maxVelocity.setPrefWidth(120);
+        group.getChildren().add(maxVelocity);
+        Text maxVelocityText = new Text("Set up maximum velocity");
+        maxVelocityText.setTranslateX(820);
+        maxVelocityText.setTranslateY(35);
+        group.getChildren().add(maxVelocityText);
+        return maxVelocity;
     }
 
     public static void main(String[] args) {
