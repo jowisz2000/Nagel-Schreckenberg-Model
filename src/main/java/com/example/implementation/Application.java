@@ -24,7 +24,7 @@ public class Application extends javafx.application.Application {
 
     @Override
     public void start(Stage stage){
-//        stage.setMaximized(true);
+        stage.setMaximized(true);
         stage.setTitle("Implementing Nagel–Schreckenberg model");
         stage.setScene(scene);
         stage.show();
@@ -71,36 +71,32 @@ public class Application extends javafx.application.Application {
         TextField timeFrameLength = initializeTimeFrame();
 
         Timeline timeline = new Timeline();
+        timeline.play();
+        timeline.pause();
         boolean[][] isCellOccupied = new boolean[nodesInColumn][nodesInRow];
         ArrayList<Car> carList = new ArrayList<>();
 
-        ScatterChart<String, Number> averageVelocityChart = initializeScatterChart();
-        XYChart.Series<String, Number> averageVelovitySeries = initializeVelocitySeries(averageVelocityChart);
+        ScatterChart<Number, Number> averageVelocityChart = initializeScatterChart();
+        XYChart.Series<Number, Number> averageVelocitySeries = initializeVelocitySeries(averageVelocityChart);
 
-        ScatterChart<String, Number> densityChart = initializeDensityChart();
-        XYChart.Series<String, Number> densitySeries = initializeDensitySeries(densityChart);
+        ScatterChart<Number, Number> densityChart = initializeDensityChart();
+        XYChart.Series<Number, Number> densitySeries = initializeDensitySeries(densityChart);
 
         Button submitButton = initializeSubmitButton();
         Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied,
-                carList, timeFrameLength, averageVelovitySeries, densitySeries,currentVelocityText, currentDensityText,
-                determineNumberOfCars);
+                carList, timeFrameLength, averageVelocitySeries, densitySeries,currentVelocityText, currentDensityText,
+                determineNumberOfCars, probabilityOfStopSlider);
 
         Button resetButton = initializeResetButton();
-        Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList, averageVelovitySeries,
-                densitySeries);
-
-        Button pauseButton = initializePauseButton();
-        Controller.onPauseClick(pauseButton, timeline);
-
-        Button startButton = initializeStartButton();
-        Controller.onStartClick(startButton, timeline);
+        Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries,
+                densitySeries, numberOfCars, timeFrameLength, probabilityOfStopSlider);
 
         Button saveButton = initializeSaveButton();
         Controller.onSaveClick(listOfSquares, saveButton);
 
         Button loadButton = initializeLoadButton();
-        Controller.onResetClick(loadButton, listOfSquares, timeline, isCellOccupied, carList, averageVelovitySeries,
-                densitySeries);
+        Controller.onResetClick(loadButton, listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries,
+                densitySeries, numberOfCars, timeFrameLength, probabilityOfStopSlider);
         Controller.onLoadClick(listOfSquares, loadButton);
     }
 
@@ -124,7 +120,7 @@ public class Application extends javafx.application.Application {
     /** methods that creates field to set up number of cars */
     private static TextField initializeNumberOfCars(){
         TextField numberOfCars = new TextField();
-        numberOfCars.setTranslateX(370);
+        numberOfCars.setTranslateX(500);
         numberOfCars.setTranslateY(45);
         numberOfCars.setPrefWidth(120);
         group.getChildren().add(numberOfCars);
@@ -140,7 +136,7 @@ public class Application extends javafx.application.Application {
         Text legend = new Text("""
                 Legend:
                 Red square: start point,
-                Green square: road,
+                Black square: road,
                 Pink square: end point,
                 Orange: car""");
         legend.setTranslateX(120);
@@ -151,44 +147,23 @@ public class Application extends javafx.application.Application {
     /** method that initializes up legend */
     private static Button initializeSubmitButton(){
         Button submitButton = new Button();
-        submitButton.setText("Start animation");
-        submitButton.setTranslateX(370);
-        submitButton.setTranslateY(80);
-        submitButton.setPrefWidth(120);
+        submitButton.setText("Start/pause animation");
+        submitButton.setTranslateX(290);
+        submitButton.setTranslateY(620);
+        submitButton.setPrefWidth(140);
         Application.group.getChildren().add(submitButton);
         return submitButton;
     }
 
     private static Button initializeResetButton(){
         Button resetButton = new Button();
-        resetButton.setText("Reset animation");
+        resetButton.setText("Reset map");
         resetButton.setTranslateX(290);
-        resetButton.setTranslateY(680);
-        resetButton.setPrefWidth(120);
+        resetButton.setTranslateY(650);
+        resetButton.setPrefWidth(140);
         Application.group.getChildren().add(resetButton);
         return resetButton;
     }
-
-    private static Button initializePauseButton(){
-        Button pauseButton = new Button();
-        pauseButton.setText("Pause animation");
-        pauseButton.setTranslateX(290);
-        pauseButton.setTranslateY(650);
-        pauseButton.setPrefWidth(120);
-        Application.group.getChildren().add(pauseButton);
-        return pauseButton;
-    }
-
-    private static Button initializeStartButton(){
-        Button pauseButton = new Button();
-        pauseButton.setText("Play animation");
-        pauseButton.setTranslateX(290);
-        pauseButton.setTranslateY(620);
-        pauseButton.setPrefWidth(120);
-        Application.group.getChildren().add(pauseButton);
-        return pauseButton;
-    }
-
     private static TextField initializeTimeFrame(){
         TextField timeFrame = new TextField();
         timeFrame.setTranslateX(750);
@@ -202,52 +177,52 @@ public class Application extends javafx.application.Application {
         return timeFrame;
     }
 
-    public static ScatterChart<String, Number> initializeScatterChart() {
-        final CategoryAxis xAxis = new CategoryAxis();
+    public static ScatterChart<Number, Number> initializeScatterChart() {
+        final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
         yAxis.setLabel("Average velocity");
         yAxis.setLowerBound(0);
         yAxis.setUpperBound(5);
         yAxis.setTickUnit(1);
         yAxis.setAutoRanging(false);
-        final ScatterChart<String, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
+        final ScatterChart<Number, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
         scatterChart.setTranslateX(900);
         scatterChart.setTranslateY(100);
         scatterChart.setAnimated(false);
-        scatterChart.setPrefWidth(300);
+        scatterChart.setPrefWidth(500);
         scatterChart.setPrefHeight(250);
         group.getChildren().add(scatterChart);
         return scatterChart;
     }
 
-    private static XYChart.Series<String, Number> initializeVelocitySeries(ScatterChart<String, Number> averageVelocityChart){
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
+    private static XYChart.Series<Number, Number> initializeVelocitySeries(ScatterChart<Number, Number> averageVelocityChart){
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
         averageVelocityChart.setLegendVisible(false);
         averageVelocityChart.getData().add(series);
         series.setName("Average velocity");
         return series;
     }
 
-    public static ScatterChart<String, Number> initializeDensityChart() {
-        final CategoryAxis xAxis = new CategoryAxis();
+    public static ScatterChart<Number, Number> initializeDensityChart() {
+        final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
         yAxis.setLabel("Density");
         yAxis.setLowerBound(0);
         yAxis.setUpperBound(1);
         yAxis.setTickUnit(0.2);
         yAxis.setAutoRanging(false);
-        final ScatterChart<String, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
+        final ScatterChart<Number, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
         scatterChart.setTranslateX(900);
         scatterChart.setTranslateY(400);
         scatterChart.setAnimated(false);
-        scatterChart.setPrefWidth(300);
+        scatterChart.setPrefWidth(500);
         scatterChart.setPrefHeight(250);
         group.getChildren().add(scatterChart);
         return scatterChart;
     }
 
-    private static XYChart.Series<String, Number> initializeDensitySeries(ScatterChart<String, Number> densityChart){
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
+    private static XYChart.Series<Number, Number> initializeDensitySeries(ScatterChart<Number, Number> densityChart){
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
         densityChart.setLegendVisible(false);
         densityChart.getData().add(series);
         series.setName("Density");
@@ -272,20 +247,20 @@ public class Application extends javafx.application.Application {
 
     private static Button initializeSaveButton(){
         Button saveButton = new Button();
-        saveButton.setText("Save road to file");
+        saveButton.setText("Save map to file");
         saveButton.setTranslateX(460);
         saveButton.setTranslateY(620);
-        saveButton.setPrefWidth(120);
+        saveButton.setPrefWidth(140);
         Application.group.getChildren().add(saveButton);
         return saveButton;
     }
 
     private static Button initializeLoadButton(){
         Button loadButton = new Button();
-        loadButton.setText("Load road from file");
+        loadButton.setText("Load map from file");
         loadButton.setTranslateX(460);
         loadButton.setTranslateY(650);
-        loadButton.setPrefWidth(120);
+        loadButton.setPrefWidth(140);
         Application.group.getChildren().add(loadButton);
         return loadButton;
     }
@@ -296,8 +271,9 @@ public class Application extends javafx.application.Application {
         options.add("Density");
         ChoiceBox<String> choiceBox = new ChoiceBox<>(FXCollections.observableArrayList(options));
         group.getChildren().add(choiceBox);
-        choiceBox.setTranslateX(500);
+        choiceBox.setTranslateX(370);
         choiceBox.setTranslateY(45);
+        choiceBox.setValue("Number of cars");
         return choiceBox;
     }
 

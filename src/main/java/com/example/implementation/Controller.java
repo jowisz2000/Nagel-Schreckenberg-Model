@@ -1,5 +1,6 @@
 package com.example.implementation;
 
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
@@ -362,10 +363,27 @@ public class Controller {
      * @param submitButton button that is responsible for starting animation */
     static void onSubmitClick(AtomicReference<Double> probability, TextField numberOfCars, ArrayList<Square>listOfSquares,
                               Button submitButton, Timeline timeline, boolean[][]isCellOccupied, ArrayList<Car> carList,
-                              TextField frameLength, XYChart.Series<String, Number> averageVelocitySeries,
-                              XYChart.Series<String, Number> densitySeries, Label currentVelocityText, Label currentDensityText,
-                              ChoiceBox<String> determineNumberOfCars){
+                              TextField frameLength, XYChart.Series<Number, Number> averageVelocitySeries,
+                              XYChart.Series<Number, Number> densitySeries, Label currentVelocityText, Label currentDensityText,
+                              ChoiceBox<String> determineNumberOfCars, Slider probabilityOfStopSlider){
         EventHandler<ActionEvent> event = e -> {
+            System.out.println(timeline.getStatus());
+
+            if(timeline.getStatus() == Animation.Status.RUNNING){
+                numberOfCars.setDisable(false);
+                frameLength.setDisable(false);
+                probabilityOfStopSlider.setDisable(false);
+                timeline.stop();
+                return;
+            }
+            else if(!carList.isEmpty()){
+                timeline.play();
+                return;
+            }
+
+            numberOfCars.setDisable(true);
+            frameLength.setDisable(true);
+            probabilityOfStopSlider.setDisable(true);
 
             int actualNumberOfCars;
 
@@ -410,8 +428,8 @@ public class Controller {
      * @param probability probability of car's sudden stop*/
     private static void carMovement(int numberOfCars, ArrayList<Square> listOfSquares, AtomicReference<Double> probability,
                                     Timeline timeline, boolean[][] isCellOccupied, ArrayList<Car> carList,
-                                    double frameLength, XYChart.Series<String, Number> averageVelocitySeries,
-                                    XYChart.Series<String, Number> densitySeries, Label currentVelocityText,
+                                    double frameLength, XYChart.Series<Number, Number> averageVelocitySeries,
+                                    XYChart.Series<Number, Number> densitySeries, Label currentVelocityText,
                                     Label currentDensityText) throws InterruptedException {
 
         carList.clear();
@@ -463,16 +481,12 @@ public class Controller {
             });
             timeline.getKeyFrames().add(drawCarsKeyFrame);
 
-            KeyFrame updateCharts = new KeyFrame(Duration.seconds(frameLength), event
-                    -> {
-//                Controller.updateVelocityChart(summedVelocity, currentCar, averageVelocitySeries, carList.size(), currentIteration, carList);
-                Controller.updateCharts(summedVelocity, currentCar, densitySeries, averageVelocitySeries, carList.size(),
-                        currentIteration, carList, listOfSquares, currentVelocityText, currentDensityText);
-        }
+            KeyFrame updateCharts = new KeyFrame(Duration.seconds(frameLength), event ->
+                    Controller.updateCharts(summedVelocity, currentCar, densitySeries, averageVelocitySeries,
+                            carList.size(), currentIteration, carList, listOfSquares, currentVelocityText, currentDensityText)
             );
             timeline.getKeyFrames().add(updateCharts);
             timeline.play();
-//            summedVelocity.set(0.0);
         }
     }
 
@@ -538,6 +552,8 @@ public class Controller {
                 return;
             }
 
+            currentCar.setMoving(true);
+
             // old coordinates of car are free
             ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.BLACK);
             isCellOccupied[currentCar.getX()][currentCar.getY()] = false;
@@ -580,13 +596,19 @@ public class Controller {
     }
 
     static void onResetClick(Button resetButton, ArrayList<Square> listOfSquares, Timeline timeline,
-                             boolean[][]isCellOccupied, ArrayList<Car> carList, XYChart.Series<String, Number> averageVelocitySeries, XYChart.Series<String, Number> densitySeries){
+                             boolean[][]isCellOccupied, ArrayList<Car> carList, XYChart.Series<Number, Number> averageVelocitySeries,
+                             XYChart.Series<Number, Number> densitySeries, TextField numberOfCars, TextField frameLength,
+                             Slider probabilityOfStopSlider){
         EventHandler<ActionEvent> event = e -> {
             averageVelocitySeries.getData().clear();
             densitySeries.getData().clear();
             timeline.stop();
             timeline.jumpTo(Duration.ZERO);
             timeline.getKeyFrames().clear();
+
+            numberOfCars.setDisable(false);
+            frameLength.setDisable(false);
+            probabilityOfStopSlider.setDisable(false);
 
             for (Square currentSquare : listOfSquares) {
                 currentSquare.setColor(Color.GREEN);
@@ -604,26 +626,8 @@ public class Controller {
         resetButton.setOnAction(event);
     }
 
-    static void onPauseClick(Button pauseButton, Timeline timeline){
-        EventHandler<ActionEvent> event = e -> {
-            if(timeline != null) {
-                timeline.stop();
-            }
-        };
-        pauseButton.setOnAction(event);
-    }
-
-    static void onStartClick(Button pauseButton, Timeline timeline){
-        EventHandler<ActionEvent> event = e -> {
-            if(timeline != null) {
-                timeline.play();
-            }
-        };
-        pauseButton.setOnAction(event);
-    }
-
-    private static void updateCharts(AtomicReference<Double> summedVelocity, Car currentCar, XYChart.Series<String, Number> densitySeries,
-                                     XYChart.Series<String, Number> averageVelocitySeries, int size,
+    private static void updateCharts(AtomicReference<Double> summedVelocity, Car currentCar, XYChart.Series<Number, Number> densitySeries,
+                                     XYChart.Series<Number, Number> averageVelocitySeries, int size,
                                      AtomicReference<Integer> currentIteration, ArrayList<Car> carList,
                                      ArrayList<Square> listOfSquares, Label currentVelocityText, Label currentDensityText){
 
@@ -639,11 +643,12 @@ public class Controller {
             final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
 
             Date now = new Date();
-            densitySeries.getData().add(new XYChart.Data<>(simpleDateFormat.format(now), 1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares)));
-            averageVelocitySeries.getData().add(new XYChart.Data<>(simpleDateFormat.format(now), summedVelocity.get()/stillMovingCars(carList)));
+            densitySeries.getData().add(new XYChart.Data<>(currentIteration.get()/size, 1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares)));
+            averageVelocitySeries.getData().add(new XYChart.Data<>(currentIteration.get()/size, summedVelocity.get()/stillMovingCars(carList)));
 
-            currentDensityText.setText("Current density = "+1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares));
-            currentVelocityText.setText("Current average velocity: "+summedVelocity.get()/stillMovingCars(carList));
+            DecimalFormat df = new DecimalFormat("#.##");
+            currentDensityText.setText("Current density: " + df.format(1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares)));
+            currentVelocityText.setText("Current average velocity: "+ df.format(summedVelocity.get()/stillMovingCars(carList)));
             summedVelocity.set(0.0);
         }
         currentIteration.set(currentIteration.get()+1);

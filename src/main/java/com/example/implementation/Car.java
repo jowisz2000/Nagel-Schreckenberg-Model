@@ -19,7 +19,7 @@ public class Car {
         this.x=x;
         this.y=y;
         this.velocity=velocity;
-        this.isMoving = true;
+        this.isMoving = false;
     }
 
     public int getX() {
