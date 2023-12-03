@@ -13,14 +13,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.robot.Robot;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.*;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -384,16 +382,12 @@ public class Controller {
             probabilityOfStopSlider.setDisable(true);
             maxVelocity.setDisable(true);
 
-            int actualNumberOfCars;
-            int actualMaxVelocity;
-
             if(determineNumberOfCars.getValue().equals("Number of cars")) {
                 if (!numberOfCars.getText().matches("\\d+")) {
                     Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
                     invalidNumberAlert.setContentText("It must be a natural number!");
                     invalidNumberAlert.show();
                 }
-                actualNumberOfCars = Integer.parseInt(numberOfCars.getText());
             }
             else{
                 if (!numberOfCars.getText().matches("^(0(?:\\.\\d+)?|1(?:\\.0+)?)$")) {
@@ -401,7 +395,6 @@ public class Controller {
                     invalidNumberAlert.setContentText("It must be a number from 0 to 1!");
                     invalidNumberAlert.show();
                 }
-                actualNumberOfCars = (int) (Double.parseDouble(numberOfCars.getText())*lengthOfRoad(listOfSquares));
             }
 
             if(!frameLength.getText().matches("\\d*\\.?\\d+")){
@@ -415,7 +408,6 @@ public class Controller {
                 invalidNumberAlert.setContentText("It must be a natural number!");
                 invalidNumberAlert.show();
             }
-            actualMaxVelocity = Integer.parseInt(maxVelocity.getText());
 
             averageVelocitySeries.getChart().getYAxis().setAutoRanging(true);
 
@@ -452,7 +444,7 @@ public class Controller {
         timeline.setCycleCount(Timeline.INDEFINITE);
         AtomicReference<Double> summedVelocity = new AtomicReference<>(0.0);
         AtomicReference<Integer> currentIteration = new AtomicReference<>(1);
-        Double frameLength = Double.parseDouble(frameLengthText.getText());
+        double frameLength = Double.parseDouble(frameLengthText.getText());
 
         for(Car currentCar: carList){
             AtomicReference<Boolean> reachedDeadEnd = new AtomicReference<>(false);
@@ -656,9 +648,6 @@ public class Controller {
                 averageVelocitySeries.getData().remove(0);
                 densitySeries.getData().remove(0);
             }
-            final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
-
-            Date now = new Date();
             densitySeries.getData().add(new XYChart.Data<>(currentIteration.get()/size, 1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares)));
             averageVelocitySeries.getData().add(new XYChart.Data<>(currentIteration.get()/size, summedVelocity.get()/stillMovingCars(carList)));
 
