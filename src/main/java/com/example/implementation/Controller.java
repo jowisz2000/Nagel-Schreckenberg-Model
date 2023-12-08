@@ -33,6 +33,8 @@ import static com.example.implementation.Variables.*;
 public class Controller {
 
     private static final ArrayList<Paint> colorsOfRoads = new ArrayList<>(Arrays.asList(Color.BLACK, Color.RED));
+
+    private static final Paint colorOfFreeField = Color.GREEN;
     /**
      * Event handler that checks if user clicked on square and then colours selected square
      * @param stage on which squares are placed
@@ -45,20 +47,19 @@ public class Controller {
             double xWithoutMargin = robot.getMouseX() - leftMargin - stage.getX();
             double yWithoutMargin = robot.getMouseY() - upperMargin - 24 - stage.getY();
 
-
             double column = xWithoutMargin / (sizeOfSquare*(1+interval));
             double row = yWithoutMargin / (sizeOfSquare*(1+interval));
 
             try {
 
 //                if we click on road then possible directions for this part of road is shown
-                if (((Rectangle) Application.group.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != Color.GREEN) {
+                if (((Rectangle) Application.group.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != colorOfFreeField) {
                     ArrayList<Direction> possibleDirections = new ArrayList<>(listOfSquares.get((int)row*nodesInRow+(int)column).getPossibleDirections());
                     StringBuilder stringBuilder = new StringBuilder();
                     for (Direction current : possibleDirections) {
                         stringBuilder.append(current).append("\n");
                     }
-                    String contentText = stringBuilder.toString().trim();
+                    String allDirectionsText = stringBuilder.toString().trim();
 
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Possible directions for this cell");
@@ -67,7 +68,7 @@ public class Controller {
                     if (listOfSquares.get((int) row * nodesInRow + (int) column).getPossibleDirections().isEmpty()) {
                         textArea = new TextArea("This cell is a dead end");
                     } else {
-                        textArea = new TextArea(contentText);
+                        textArea = new TextArea(allDirectionsText);
                     }
 
                     textArea.setEditable(false);
@@ -93,7 +94,7 @@ public class Controller {
             }
 
             if(row % 1 < 1/(1+interval) && column % 1 < 1/(1+interval) && timeline.getStatus() == Animation.Status.RUNNING &&
-                    listOfSquares.get((int)row*nodesInRow+(int)column).getColor()==Color.GREEN){
+                    listOfSquares.get((int)row*nodesInRow+(int)column).getColor()==colorOfFreeField){
                 return;
             }
 
@@ -296,9 +297,9 @@ public class Controller {
 
 //        bottom right column
         try {
-            if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() != Color.GREEN
-                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column+1)).getFill() != Color.GREEN
-                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column+1)).getFill() != Color.GREEN) {
+            if (((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column)).getFill() != colorOfFreeField
+                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column+1)).getFill() != colorOfFreeField
+                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column+1)).getFill() != colorOfFreeField) {
                 return true;
             }
         }
@@ -308,9 +309,9 @@ public class Controller {
 
 //        top left column
         try {
-            if (((Rectangle) Application.group.getChildren().get((row+1) * nodesInRow + column)).getFill() != Color.GREEN
-                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.GREEN
-                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column-1)).getFill() != Color.GREEN) {
+            if (((Rectangle) Application.group.getChildren().get((row+1) * nodesInRow + column)).getFill() != colorOfFreeField
+                    && ((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != colorOfFreeField
+                    && ((Rectangle) Application.group.getChildren().get((row + 1) * nodesInRow + column-1)).getFill() != colorOfFreeField) {
                 return true;
             }
         }
@@ -320,9 +321,9 @@ public class Controller {
 
 //        top left corner
         try {
-            if (((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != Color.GREEN
-                    && ((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.GREEN
-                    && ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column-1)).getFill() != Color.GREEN) {
+            if (((Rectangle) Application.group.getChildren().get((row) * nodesInRow + column-1)).getFill() != colorOfFreeField
+                    && ((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != colorOfFreeField
+                    && ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column-1)).getFill() != colorOfFreeField) {
                 return true;
             }
         }
@@ -332,9 +333,9 @@ public class Controller {
 
         //        right down corner
         try {
-            if (((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != Color.GREEN
-                    && ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column+1)).getFill() != Color.GREEN
-                    && ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column + 1)).getFill() != Color.GREEN) {
+            if (((Rectangle) Application.group.getChildren().get((row-1) * nodesInRow + column)).getFill() != colorOfFreeField
+                    && ((Rectangle) Application.group.getChildren().get(row * nodesInRow + column+1)).getFill() != colorOfFreeField
+                    && ((Rectangle) Application.group.getChildren().get((row - 1) * nodesInRow + column + 1)).getFill() != colorOfFreeField) {
                 return true;
             }
         }
@@ -460,7 +461,6 @@ public class Controller {
         double frameLength = Double.parseDouble(frameLengthText.getText());
 
         for(Car currentCar: carList){
-            AtomicReference<Boolean> reachedDeadEnd = new AtomicReference<>(false);
 
             KeyFrame initializeVelocityFrame = new KeyFrame(Duration.ZERO, event -> {
                 Random random = new Random();
@@ -475,20 +475,12 @@ public class Controller {
             });
             timeline.getKeyFrames().add(initializeVelocityFrame);
 
-            KeyFrame iterationKeyframe = new KeyFrame(Duration.seconds(frameLength/4),
-                    e -> iterateInTimeFrame(listOfSquares, currentCar, timeline, reachedDeadEnd, isCellOccupied, carList,
+            KeyFrame iterationKeyframe = new KeyFrame(Duration.seconds(frameLength/3),
+                    e -> iterateInTimeFrame(listOfSquares, currentCar, timeline, isCellOccupied, carList,
                             numberOfCars, frameLengthText, maxVelocity, probabilityOfStopSlider));
             timeline.getKeyFrames().add(iterationKeyframe);
 
-//            KeyFrame stopAnimationKeyFrame = new KeyFrame(Duration.seconds(frameLength/2), event -> {
-//                if (currentCar == null) {
-//                    timeline.stop();
-//                    timeline.getKeyFrames().clear();
-//                }
-//            });
-//            timeline.getKeyFrames().add(stopAnimationKeyFrame);
-
-            KeyFrame drawCarsKeyFrame = new KeyFrame(Duration.seconds(frameLength*3/4), event -> {
+            KeyFrame drawCarsKeyFrame = new KeyFrame(Duration.seconds(frameLength*2/3), event -> {
                 if(currentCar.isMoving() && !(currentCar.getX() == 5 && currentCar.getY() == 0)) {
                     isCellOccupied[currentCar.getX()][currentCar.getY()] = true;
                 }
@@ -511,11 +503,10 @@ public class Controller {
  * @param currentCar coordinates of this car are changed while invoking this method
  * @param timeline holds all animation KeyFrames
  * @param isCellOccupied 2D array of booleans that tells whether cell is occupied by car
- * @param reachedDeadEnd describes if car reached dead end */
+ */
     private static void iterateInTimeFrame(ArrayList<Square> listOfSquares, Car currentCar, Timeline timeline,
-                                           AtomicReference<Boolean> reachedDeadEnd, boolean[][] isCellOccupied,
-                                           ArrayList<Car> listOfCars, TextField numberOfCars, TextField frameLength,
-                                           TextField maxVelocity, Slider probabilityOfStopSLider){
+                                           boolean[][] isCellOccupied, ArrayList<Car> listOfCars, TextField numberOfCars,
+                                           TextField frameLength, TextField maxVelocity, Slider probabilityOfStopSLider){
         int currentX = currentCar.getX();
         int currentY = currentCar.getY();
         int checkedBoxes = 0;
@@ -559,15 +550,9 @@ public class Controller {
             }
 //            if squares reaches dead end, then car is removed
             else if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.PINK) {
-                reachedDeadEnd.set(true);
                 currentCar.setMoving(false);
                 isCellOccupied[currentX][currentY] = false;
                 isCellOccupied[oldX][oldY] = false;
-                System.out.println("How many cars left: "+stillMovingCars(listOfCars));
-                System.out.println("Leaving car coordinates: "+oldX+", "+oldY);
-                System.out.println("Current velocity: "+currentCar.getVelocity());
-                System.out.println("Where is it now: "+currentX+", "+currentY+"\n--------------------");
-
 
                 if(!isAnyCellOccupied(isCellOccupied)){
                     uploadChanges(isCellOccupied, listOfSquares);
@@ -607,7 +592,7 @@ public class Controller {
     /** searches for end points in given squares */
     static void setEndPoints(ArrayList<Square> listOfSquares) {
         for (Square square : listOfSquares)
-            if ((square.getColor() != Color.GREEN) && square.getPossibleDirections().isEmpty()) {
+            if ((square.getColor() != colorOfFreeField) && square.getPossibleDirections().isEmpty()) {
                 square.setColor(Color.PINK);
             }
     }
@@ -695,7 +680,7 @@ public class Controller {
 
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(selectedFile.getAbsolutePath()))) {
                 for (int i=0; i<listOfSquares.size(); i++) {
-                    if(listOfSquares.get(i).getColor() != Color.GREEN){
+                    if(listOfSquares.get(i).getColor() != colorOfFreeField){
                         StringBuilder allDirections = new StringBuilder();
                         for(Direction direction: listOfSquares.get(i).getPossibleDirections()){
                             allDirections.append(direction).append(" ");
@@ -704,7 +689,6 @@ public class Controller {
                         writer.newLine();
                     }
                 }
-                System.out.println("Coordinates saved to file.");
             } catch (IOException | NullPointerException ignored) {}
         };
         saveButton.setOnAction(event);
@@ -753,7 +737,7 @@ public class Controller {
         timeline.getKeyFrames().clear();
 
         for (Square currentSquare : listOfSquares) {
-            currentSquare.setColor(Color.GREEN);
+            currentSquare.setColor((Color) colorOfFreeField);
             currentSquare.resetDirection();
         }
 
@@ -783,12 +767,5 @@ public class Controller {
                 }
             }
         }
-    }
-
-    private static boolean anyMovingCars(ArrayList<Car> carList){
-        for(Car car: carList){
-            if(car.isMoving()) return true;
-        }
-        return false;
     }
 }
