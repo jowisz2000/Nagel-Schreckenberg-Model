@@ -5,6 +5,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
@@ -17,12 +18,14 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.example.implementation.Application.group;
 import static com.example.implementation.Application.scene;
 import static com.example.implementation.Direction.*;
 import static com.example.implementation.Variables.*;
@@ -35,7 +38,7 @@ public class Controller {
      * @param stage on which squares are placed
      * */
 
-    static void onRoadSquareClick(Stage stage, ArrayList<Square> listOfSquares) {
+    static void onRoadSquareClick(Stage stage, ArrayList<Square> listOfSquares, Timeline timeline) {
         Robot robot = new Robot();
         scene.addEventFilter(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
 //            created coordinates that don't depend if application is on full screen or not
@@ -86,6 +89,11 @@ public class Controller {
 
 //            it doesn't allow to choose road on start point
             if((int)row==5 && (int)column == 0){
+                return;
+            }
+
+            if(row % 1 < 1/(1+interval) && column % 1 < 1/(1+interval) && timeline.getStatus() == Animation.Status.RUNNING &&
+                    listOfSquares.get((int)row*nodesInRow+(int)column).getColor()==Color.GREEN){
                 return;
             }
 
@@ -366,7 +374,6 @@ public class Controller {
                               XYChart.Series<Number, Number> densitySeries, Label currentVelocityText, Label currentDensityText,
                               ChoiceBox<String> determineNumberOfCars, Slider probabilityOfStopSlider, TextField maxVelocity){
         EventHandler<ActionEvent> event = e -> {
-            System.out.println(timeline.getStatus());
 
             if(timeline.getStatus() == Animation.Status.RUNNING){
                 timeline.stop();
@@ -374,33 +381,37 @@ public class Controller {
             }
             else if(!carList.isEmpty()){
                 timeline.play();
+                setEndPoints(listOfSquares);
                 return;
             }
 
-            numberOfCars.setDisable(true);
-            frameLength.setDisable(true);
-            probabilityOfStopSlider.setDisable(true);
-            maxVelocity.setDisable(true);
+            int actualNumberOfCars;
+            setEndPoints(listOfSquares);
 
             if(determineNumberOfCars.getValue().equals("Number of cars")) {
                 if (!numberOfCars.getText().matches("\\d+")) {
                     Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
                     invalidNumberAlert.setContentText("It must be a natural number!");
                     invalidNumberAlert.show();
+                    return;
                 }
+                actualNumberOfCars = Integer.parseInt(numberOfCars.getText());
             }
             else{
                 if (!numberOfCars.getText().matches("^(0(?:\\.\\d+)?|1(?:\\.0+)?)$")) {
                     Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
                     invalidNumberAlert.setContentText("It must be a number from 0 to 1!");
                     invalidNumberAlert.show();
+                    return;
                 }
+                actualNumberOfCars = (int) (Double.parseDouble(numberOfCars.getText())*lengthOfRoad(listOfSquares));
             }
 
             if(!frameLength.getText().matches("\\d*\\.?\\d+")){
                 Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
                 invalidNumberAlert.setContentText("It must be a positive number!");
                 invalidNumberAlert.show();
+                return;
             }
 
             if (!maxVelocity.getText().matches("\\d+")) {
@@ -409,13 +420,15 @@ public class Controller {
                 invalidNumberAlert.show();
             }
 
-            averageVelocitySeries.getChart().getYAxis().setAutoRanging(true);
+            numberOfCars.setDisable(true);
+            frameLength.setDisable(true);
+            probabilityOfStopSlider.setDisable(true);
+            maxVelocity.setDisable(true);
 
-            setEndPoints(listOfSquares);
             try {
-                carMovement(numberOfCars, maxVelocity, listOfSquares, probability, timeline,
+                carMovement(actualNumberOfCars, numberOfCars, maxVelocity, listOfSquares, probability, timeline,
                         isCellOccupied, carList, frameLength, averageVelocitySeries,
-                        densitySeries, currentVelocityText, currentDensityText);
+                        densitySeries, currentVelocityText, currentDensityText, probabilityOfStopSlider);
             }
             catch (InterruptedException | NumberFormatException | ArithmeticException ignored) {}
 
@@ -427,16 +440,16 @@ public class Controller {
      * @param numberOfCars number of cars used in animation
      * @param listOfSquares list of printed squares
      * @param probability probability of car's sudden stop*/
-    private static void carMovement(TextField numberOfCars, TextField maxVelocity, ArrayList<Square> listOfSquares, AtomicReference<Double> probability,
+    private static void carMovement(int actualNumberOfCars, TextField numberOfCars, TextField maxVelocity, ArrayList<Square> listOfSquares, AtomicReference<Double> probability,
                                     Timeline timeline, boolean[][] isCellOccupied, ArrayList<Car> carList,
                                     TextField frameLengthText, XYChart.Series<Number, Number> averageVelocitySeries,
                                     XYChart.Series<Number, Number> densitySeries, Label currentVelocityText,
-                                    Label currentDensityText) throws InterruptedException {
+                                    Label currentDensityText, Slider probabilityOfStopSlider) throws InterruptedException {
 
         carList.clear();
         averageVelocitySeries.getData().clear();
         densitySeries.getData().clear();
-        for (int i = 0; i < Integer.parseInt(numberOfCars.getText()); i++) {
+        for (int i = 0; i <actualNumberOfCars; i++) {
             Car newCar = new Car(5, 0, 0);
             carList.add(newCar);
         }
@@ -464,30 +477,31 @@ public class Controller {
 
             KeyFrame iterationKeyframe = new KeyFrame(Duration.seconds(frameLength/4),
                     e -> iterateInTimeFrame(listOfSquares, currentCar, timeline, reachedDeadEnd, isCellOccupied, carList,
-                            numberOfCars, frameLengthText, maxVelocity));
+                            numberOfCars, frameLengthText, maxVelocity, probabilityOfStopSlider));
             timeline.getKeyFrames().add(iterationKeyframe);
 
-            KeyFrame stopAnimationKeyFrame = new KeyFrame(Duration.seconds(frameLength/2), event -> {
-                if (currentCar == null) {
-                    timeline.stop();
-                    timeline.getKeyFrames().clear();
-                }
-            });
-            timeline.getKeyFrames().add(stopAnimationKeyFrame);
+//            KeyFrame stopAnimationKeyFrame = new KeyFrame(Duration.seconds(frameLength/2), event -> {
+//                if (currentCar == null) {
+//                    timeline.stop();
+//                    timeline.getKeyFrames().clear();
+//                }
+//            });
+//            timeline.getKeyFrames().add(stopAnimationKeyFrame);
 
             KeyFrame drawCarsKeyFrame = new KeyFrame(Duration.seconds(frameLength*3/4), event -> {
-                if(!reachedDeadEnd.get() && !(currentCar.getX() == 5 && currentCar.getY() == 0)) {
+                if(currentCar.isMoving() && !(currentCar.getX() == 5 && currentCar.getY() == 0)) {
                     isCellOccupied[currentCar.getX()][currentCar.getY()] = true;
-                    ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.ORANGE);
                 }
             });
             timeline.getKeyFrames().add(drawCarsKeyFrame);
 
-            KeyFrame updateCharts = new KeyFrame(Duration.seconds(frameLength), event ->
+            KeyFrame updateGUI = new KeyFrame(Duration.seconds(frameLength), event ->{
+                    uploadChanges(isCellOccupied, listOfSquares);
                     Controller.updateCharts(summedVelocity, currentCar, densitySeries, averageVelocitySeries,
-                            carList.size(), currentIteration, carList, listOfSquares, currentVelocityText, currentDensityText)
-            );
-            timeline.getKeyFrames().add(updateCharts);
+                    carList.size(), currentIteration, carList, listOfSquares, currentVelocityText, currentDensityText);
+            });
+            timeline.getKeyFrames().add(updateGUI);
+
             timeline.play();
         }
     }
@@ -500,12 +514,15 @@ public class Controller {
  * @param reachedDeadEnd describes if car reached dead end */
     private static void iterateInTimeFrame(ArrayList<Square> listOfSquares, Car currentCar, Timeline timeline,
                                            AtomicReference<Boolean> reachedDeadEnd, boolean[][] isCellOccupied,
-                                           ArrayList<Car> listOfCars, TextField numberOfCars, TextField frameLength, TextField maxVelocity){
+                                           ArrayList<Car> listOfCars, TextField numberOfCars, TextField frameLength,
+                                           TextField maxVelocity, Slider probabilityOfStopSLider){
         int currentX = currentCar.getX();
         int currentY = currentCar.getY();
         int checkedBoxes = 0;
         int oldX = currentX;
         int oldY = currentY;
+
+        isCellOccupied[currentX][currentY] = false;
 
         while (checkedBoxes < currentCar.getVelocity()) {
 
@@ -532,11 +549,11 @@ public class Controller {
                     case LEFT -> currentY++;
                     case RIGHT -> currentY--;
                 }
+                System.out.println("Moving back");
 
                 currentCar.setX(currentX);
                 currentCar.setY(currentY);
                 currentCar.setVelocity(checkedBoxes);
-                ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.ORANGE);
                 isCellOccupied[currentCar.getX()][currentCar.getY()] = true;
                 return;
             }
@@ -544,25 +561,39 @@ public class Controller {
             else if (listOfSquares.get(currentX * nodesInRow + currentY).getColor() == Color.PINK) {
                 reachedDeadEnd.set(true);
                 currentCar.setMoving(false);
+                isCellOccupied[currentX][currentY] = false;
+                isCellOccupied[oldX][oldY] = false;
+                System.out.println("How many cars left: "+stillMovingCars(listOfCars));
+                System.out.println("Leaving car coordinates: "+oldX+", "+oldY);
+                System.out.println("Current velocity: "+currentCar.getVelocity());
+                System.out.println("Where is it now: "+currentX+", "+currentY+"\n--------------------");
+
+
                 if(!isAnyCellOccupied(isCellOccupied)){
+                    uploadChanges(isCellOccupied, listOfSquares);
                     listOfSquares.get(5*nodesInRow).setColor(Color.RED);
+
+                    for(Square square: listOfSquares){
+                        if(square.getColor()==Color.PINK){
+                            square.setColor(Color.BLACK);
+                        }
+                    }
+
                     timeline.stop();
                     timeline.getKeyFrames().clear();
                     listOfCars.clear();
                     numberOfCars.setDisable(false);
                     frameLength.setDisable(false);
                     maxVelocity.setDisable(false);
+                    probabilityOfStopSLider.setDisable(false);
                     return;
                 }
-                ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.BLACK);
-                isCellOccupied[currentCar.getX()][currentCar.getY()] = false;
                 return;
             }
 
             currentCar.setMoving(true);
 
             // old coordinates of car are free
-            ((Rectangle) group.getChildren().get(currentCar.getX() * nodesInRow + currentCar.getY())).setFill(Color.BLACK);
             isCellOccupied[currentCar.getX()][currentCar.getY()] = false;
             currentCar.setX(currentX);
             currentCar.setY(currentY);
@@ -581,16 +612,6 @@ public class Controller {
             }
     }
 
-    private static void printOccupiedCells(boolean[][]array){
-        for(int i=0; i<nodesInColumn; i++){
-            for(int j=0; j<nodesInRow; j++){
-                if(array[i][j]){
-                    System.out.println(i+", "+j);
-                }
-            }
-        }
-    }
-
     private static boolean isAnyCellOccupied(boolean[][]array){
         for(int i=0; i<nodesInColumn; i++){
             for(int j=0; j<nodesInRow; j++){
@@ -606,31 +627,8 @@ public class Controller {
                              boolean[][]isCellOccupied, ArrayList<Car> carList, XYChart.Series<Number, Number> averageVelocitySeries,
                              XYChart.Series<Number, Number> densitySeries, TextField numberOfCars, TextField frameLength,
                              Slider probabilityOfStopSlider, TextField maxVelocity){
-        EventHandler<ActionEvent> event = e -> {
-            averageVelocitySeries.getData().clear();
-            densitySeries.getData().clear();
-            timeline.stop();
-            timeline.jumpTo(Duration.ZERO);
-            timeline.getKeyFrames().clear();
-
-            numberOfCars.setDisable(false);
-            frameLength.setDisable(false);
-            probabilityOfStopSlider.setDisable(false);
-            maxVelocity.setDisable(false);
-
-            for (Square currentSquare : listOfSquares) {
-                currentSquare.setColor(Color.GREEN);
-                currentSquare.resetDirection();
-            }
-
-            listOfSquares.get(5*nodesInRow).setColor(Color.RED);
-
-            for (boolean[] booleans : isCellOccupied) {
-                Arrays.fill(booleans, false);
-            }
-            carList.clear();
-            printOccupiedCells(isCellOccupied);
-        };
+        EventHandler<ActionEvent> event = e -> resetGUI(listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries, densitySeries,
+                numberOfCars, frameLength, probabilityOfStopSlider, maxVelocity);
         resetButton.setOnAction(event);
     }
 
@@ -648,8 +646,18 @@ public class Controller {
                 averageVelocitySeries.getData().remove(0);
                 densitySeries.getData().remove(0);
             }
+
             densitySeries.getData().add(new XYChart.Data<>(currentIteration.get()/size, 1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares)));
+
+            for (XYChart.Data<Number, Number> data : densitySeries.getData()) {
+                data.getNode().setStyle("-fx-background-radius: 5px;");
+            }
+
             averageVelocitySeries.getData().add(new XYChart.Data<>(currentIteration.get()/size, summedVelocity.get()/stillMovingCars(carList)));
+            if(currentIteration.get()/size > 50){
+                ((NumberAxis)densitySeries.getChart().getXAxis()).setForceZeroInRange(false);
+                ((NumberAxis)averageVelocitySeries.getChart().getXAxis()).setForceZeroInRange(false);
+            }
 
             DecimalFormat df = new DecimalFormat("#.##");
             currentDensityText.setText("Current density: " + df.format(1.0*stillMovingCars(carList)/lengthOfRoad(listOfSquares)));
@@ -702,14 +710,20 @@ public class Controller {
         saveButton.setOnAction(event);
     }
 
-    public static void onLoadClick(ArrayList<Square> listOfSquares, Button loadButton) {
+    public static void onLoadClick(Button loadButton, ArrayList<Square> listOfSquares, Timeline timeline,
+                                   boolean[][]isCellOccupied, ArrayList<Car> carList, XYChart.Series<Number, Number> averageVelocitySeries,
+                                   XYChart.Series<Number, Number> densitySeries, TextField numberOfCars, TextField frameLength,
+                                   Slider probabilityOfStopSlider, TextField maxVelocity) {
         EventHandler<ActionEvent> event = e -> {
+
+            resetGUI(listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries, densitySeries,
+                    numberOfCars, frameLength, probabilityOfStopSlider, maxVelocity);
+
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Choose road configuration");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Data Files", "*.dat"));
             try {
                 File selectedFile = fileChooser.showOpenDialog(null);
-
                 Scanner scanner = new Scanner(new File(selectedFile.getAbsolutePath()));
 
                 while(scanner.hasNextLine()){
@@ -726,10 +740,55 @@ public class Controller {
                     listOfSquares.get(index).setPossibleDirections(loadedDirections);
                 }
 
-            } catch (IOException | NullPointerException ignored) {
-
-            }
+            } catch (IOException | NullPointerException ignored) {}
         };
         loadButton.setOnAction(event);
+    }
+
+    private static void resetGUI(ArrayList<Square> listOfSquares, Timeline timeline, boolean[][] isCellOccupied, ArrayList<Car> carList, XYChart.Series<Number, Number> averageVelocitySeries, XYChart.Series<Number, Number> densitySeries, TextField numberOfCars, TextField frameLength, Slider probabilityOfStopSlider, TextField maxVelocity) {
+        averageVelocitySeries.getData().clear();
+        densitySeries.getData().clear();
+        timeline.stop();
+        timeline.jumpTo(Duration.ZERO);
+        timeline.getKeyFrames().clear();
+
+        for (Square currentSquare : listOfSquares) {
+            currentSquare.setColor(Color.GREEN);
+            currentSquare.resetDirection();
+        }
+
+        listOfSquares.get(5*nodesInRow).setColor(Color.RED);
+
+        for (boolean[] booleans : isCellOccupied) {
+            Arrays.fill(booleans, false);
+        }
+        carList.clear();
+
+        numberOfCars.setDisable(false);
+        frameLength.setDisable(false);
+        probabilityOfStopSlider.setDisable(false);
+        maxVelocity.setDisable(false);
+    }
+
+    private static void uploadChanges(boolean[][]isCellOccupied, ArrayList<Square> listOfSquares){
+        for(int i=0; i<nodesInColumn; i++){
+            for(int j=0; j<nodesInRow; j++){
+                if(!listOfSquares.get(i*nodesInRow+j).getPossibleDirections().isEmpty()){
+                    if(isCellOccupied[i][j]){
+                        listOfSquares.get(i*nodesInRow+j).setColor(Color.ORANGE);
+                    }
+                    else{
+                        listOfSquares.get(i*nodesInRow+j).setColor(Color.BLACK);
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean anyMovingCars(ArrayList<Car> carList){
+        for(Car car: carList){
+            if(car.isMoving()) return true;
+        }
+        return false;
     }
 }

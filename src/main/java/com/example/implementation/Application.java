@@ -4,12 +4,15 @@ import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.chart.*;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -20,7 +23,9 @@ public class Application extends javafx.application.Application {
     static Group group = new Group();
     /** scene on which all elements are placed */
 
-    static Scene scene = new Scene(group, 1200, 800);
+    static Group wholeGroup = new Group(group);
+
+    static Scene scene = new Scene(wholeGroup, 1200, 800);
 
     @Override
     public void start(Stage stage){
@@ -28,15 +33,17 @@ public class Application extends javafx.application.Application {
         stage.setTitle("Implementing Nagel–Schreckenberg model");
         stage.setScene(scene);
         stage.show();
+        Timeline timeline = new Timeline();
+        timeline.play();
 
         ArrayList<Square> listOfSquares = new ArrayList<>();
-        initializeElements(listOfSquares);
-        Controller.onRoadSquareClick(stage, listOfSquares);
+        initializeElements(listOfSquares, timeline);
+        Controller.onRoadSquareClick(stage, listOfSquares, timeline);
     }
 
 
 /** sets up elements on interface */
-    public static void initializeElements(ArrayList<Square> listOfSquares){
+    public static void initializeElements(ArrayList<Square> listOfSquares, Timeline timeline){
 //        all squares are drawn
         for(int j = 0; j < nodesInColumn; j++) {
             for (int i = 0; i < nodesInRow; i++) {
@@ -57,7 +64,6 @@ public class Application extends javafx.application.Application {
         Label currentVelocityText = initializeCurrentVelocityText();
         Label currentDensityText = initializeCurrentDensityText();
 
-
         ChoiceBox<String> determineNumberOfCars = initializeChoiceBox();
 
         setLegendText();
@@ -69,10 +75,7 @@ public class Application extends javafx.application.Application {
         Controller.handleProbability(probability, probabilityOfStopSlider);
 
         TextField timeFrameLength = initializeTimeFrame();
-
-        Timeline timeline = new Timeline();
-        timeline.play();
-        timeline.pause();
+        
         boolean[][] isCellOccupied = new boolean[nodesInColumn][nodesInRow];
         ArrayList<Car> carList = new ArrayList<>();
 
@@ -86,7 +89,7 @@ public class Application extends javafx.application.Application {
 
         Button submitButton = initializeSubmitButton();
         Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied,
-                carList, timeFrameLength, averageVelocitySeries, densitySeries,currentVelocityText, currentDensityText,
+                carList, timeFrameLength, averageVelocitySeries, densitySeries, currentVelocityText, currentDensityText,
                 determineNumberOfCars, probabilityOfStopSlider, maxVelocity);
 
         Button resetButton = initializeResetButton();
@@ -97,9 +100,8 @@ public class Application extends javafx.application.Application {
         Controller.onSaveClick(listOfSquares, saveButton);
 
         Button loadButton = initializeLoadButton();
-        Controller.onResetClick(loadButton, listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries,
+        Controller.onLoadClick(loadButton, listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries,
                 densitySeries, numberOfCars, timeFrameLength, probabilityOfStopSlider, maxVelocity);
-        Controller.onLoadClick(listOfSquares, loadButton);
     }
 
 
@@ -187,7 +189,7 @@ public class Application extends javafx.application.Application {
         yAxis.setLowerBound(0);
         yAxis.setUpperBound(5);
         yAxis.setTickUnit(1);
-        yAxis.setAutoRanging(false);
+        yAxis.setAutoRanging(true);
         final ScatterChart<Number, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
         scatterChart.setTranslateX(900);
         scatterChart.setTranslateY(100);
@@ -213,7 +215,7 @@ public class Application extends javafx.application.Application {
         yAxis.setLowerBound(0);
         yAxis.setUpperBound(1);
         yAxis.setTickUnit(0.2);
-        yAxis.setAutoRanging(false);
+        yAxis.setAutoRanging(true);
         final ScatterChart<Number, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
         scatterChart.setTranslateX(900);
         scatterChart.setTranslateY(400);
