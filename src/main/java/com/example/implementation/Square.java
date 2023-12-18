@@ -3,8 +3,6 @@ package com.example.implementation;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-
-import java.io.Serializable;
 import java.util.HashSet;
 
 /** represents single square that is drawn on interface */
@@ -39,9 +37,5 @@ public class Square{
 
     public void setColor(Color color) {
         rectangle.setFill(color);
-    }
-
-    public Rectangle getRectangle() {
-        return rectangle;
     }
 }
