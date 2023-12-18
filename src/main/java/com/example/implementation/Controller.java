@@ -540,7 +540,6 @@ public class Controller {
                     case LEFT -> currentY++;
                     case RIGHT -> currentY--;
                 }
-                System.out.println("Moving back");
 
                 currentCar.setX(currentX);
                 currentCar.setY(currentY);
