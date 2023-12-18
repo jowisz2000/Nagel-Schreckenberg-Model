@@ -1,10 +1,7 @@
 module com.example.implementation {
     requires javafx.controls;
     requires javafx.fxml;
-
-    requires org.controlsfx.controls;
-    requires org.kordamp.bootstrapfx.core;
-
-    opens com.example.implemenatation to javafx.fxml;
-    exports com.example.implemenatation;
+    requires javafx.base;
+    requires javafx.graphics;
+    exports com.example.implementation;
 }
