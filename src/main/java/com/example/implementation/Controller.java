@@ -5,13 +5,13 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.robot.Robot;
@@ -40,7 +40,7 @@ public class Controller {
      * @param stage on which squares are placed
      * */
 
-    static void onRoadSquareClick(Stage stage, ArrayList<Square> listOfSquares, Timeline timeline, Group group, Scene scene) {
+    static void onRoadSquareClick(Stage stage, ArrayList<Square> listOfSquares, Timeline timeline, Pane paneoup, Scene scene) {
         Robot robot = new Robot();
         scene.addEventFilter(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
 //            created coordinates that don't depend if application is on full screen or not
@@ -53,7 +53,7 @@ public class Controller {
             try {
 
 //                if we click on road then possible directions for this part of road is shown
-                if (((Rectangle) group.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != colorOfFreeField) {
+                if (((Rectangle) paneoup.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != colorOfFreeField) {
                     ArrayList<Direction> possibleDirections = new ArrayList<>(listOfSquares.get((int)row*nodesInRow+(int)column).getPossibleDirections());
                     StringBuilder stringBuilder = new StringBuilder();
                     for (Direction current : possibleDirections) {
@@ -98,14 +98,14 @@ public class Controller {
                 return;
             }
 
-            if(numberOfNeighbours((int)row, (int)column, group) == 0){
+            if(numberOfNeighbours((int)row, (int)column, paneoup) == 0){
                 Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
                 noNeighboursAlert.setContentText("This cell has no neighbours! Please select one with neighbours.");
                 noNeighboursAlert.show();
                 return;
             }
 
-            if(disableChoosing((int)row, (int)column, group)){
+            if(disableChoosing((int)row, (int)column, paneoup)){
                 Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
                 noNeighboursAlert.setContentText("It is impossible to put road in this square");
                 noNeighboursAlert.show();
@@ -114,8 +114,8 @@ public class Controller {
 
 //            if user clicked the square then the square is coloured
             if(row % 1 < 1/(1+interval) && column % 1 < 1/(1+interval)){
-                ((Rectangle) group.getChildren().get(nodesInRow*(int)row+(int)column)).setFill(Color.BLACK);
-                setDirection(listOfSquares, (int)row, (int)column, group);
+                ((Rectangle) paneoup.getChildren().get(nodesInRow*(int)row+(int)column)).setFill(Color.BLACK);
+                setDirection(listOfSquares, (int)row, (int)column, paneoup);
             }
         });
     }
@@ -124,14 +124,14 @@ public class Controller {
      * @param listOfSquares list of all drawn squares
      * @param  row row of selected square
      * @param column column of selected square*/
-    public static void setDirection(ArrayList<Square> listOfSquares, int row, int column, Group group) {
-        int numberOfNeighbours = numberOfNeighbours(row, column, group);
+    public static void setDirection(ArrayList<Square> listOfSquares, int row, int column, Pane pane) {
+        int numberOfNeighbours = numberOfNeighbours(row, column, pane);
 
 //        the most complicated case: if selected node has 2 neighbours
         if (numberOfNeighbours == 2) {
-            if(checkLeftNeighbour(row, column, group) && checkRightNeighbour(row, column, group)){
+            if(checkLeftNeighbour(row, column, pane) && checkRightNeighbour(row, column, pane)){
 //                first case: if we can only move left or right from selected node
-                if(disableChoosing(row-1, column, group) && disableChoosing(row+1,column, group)){
+                if(disableChoosing(row-1, column, pane) && disableChoosing(row+1,column, pane)){
                     ButtonType left = new ButtonType("left", ButtonBar.ButtonData.OK_DONE);
                     ButtonType right = new ButtonType("right", ButtonBar.ButtonData.OK_DONE);
                     Alert alert = new Alert(Alert.AlertType.WARNING,  "Choose direction", left, right);
@@ -146,14 +146,14 @@ public class Controller {
                     }
                 }
                 //               second case: if we can move left, right from selected node and additionally up or down
-                else if(disableChoosing(row-1, column, group) || disableChoosing(row+1, column, group)){
+                else if(disableChoosing(row-1, column, pane) || disableChoosing(row+1, column, pane)){
                     listOfSquares.get(row * nodesInRow + column - 1).addDirection(Direction.RIGHT);
                     listOfSquares.get(row * nodesInRow + column + 1).addDirection(Direction.LEFT);
                 }
             }
 //            same checking left or right neighbour
-            else if(checkUpperNeighbour(row, column, group) && checkLowerNeighbour(row, column, group)){
-                if(disableChoosing(row, column-1, group) && disableChoosing(row,column+1, group)){
+            else if(checkUpperNeighbour(row, column, pane) && checkLowerNeighbour(row, column, pane)){
+                if(disableChoosing(row, column-1, pane) && disableChoosing(row,column+1, pane)){
                     ButtonType up = new ButtonType("up", ButtonBar.ButtonData.OK_DONE);
                     ButtonType down = new ButtonType("down", ButtonBar.ButtonData.OK_DONE);
                     Alert alert = new Alert(Alert.AlertType.WARNING,  "Choose direction", up, down);
@@ -167,19 +167,19 @@ public class Controller {
                         listOfSquares.get(row * nodesInRow + column).addDirection(DOWN);
                     }
                 }
-                else if(disableChoosing(row, column-1, group) || disableChoosing(row, column+1, group)){
+                else if(disableChoosing(row, column-1, pane) || disableChoosing(row, column+1, pane)){
                     listOfSquares.get((row+1) * nodesInRow + column).addDirection(Direction.UP);
                     listOfSquares.get((row-1) * nodesInRow + column).addDirection(Direction.DOWN);
                 }
             }
 //            else, we set direction that is based on node's neighbours
             else{
-                standardDirectionConfiguration(row, column, listOfSquares, group);
+                standardDirectionConfiguration(row, column, listOfSquares, pane);
             }
         }
         //            else, we set direction that is based on node's neighbours
         else{
-            standardDirectionConfiguration(row, column, listOfSquares, group);
+            standardDirectionConfiguration(row, column, listOfSquares, pane);
         }
     }
 
@@ -187,17 +187,17 @@ public class Controller {
      *  @param listOfSquares list of all drawn squares
      *  @param  row row of selected square
      *  @param column column of selected square*/
-    private static void standardDirectionConfiguration(int row, int column, ArrayList<Square> listOfSquares, Group group){
-        if (checkLeftNeighbour(row, column, group)) {
+    private static void standardDirectionConfiguration(int row, int column, ArrayList<Square> listOfSquares, Pane pane){
+        if (checkLeftNeighbour(row, column, pane)) {
             listOfSquares.get(row * nodesInRow + column - 1).addDirection(RIGHT);
         }
-        if (checkRightNeighbour(row, column, group)) {
+        if (checkRightNeighbour(row, column, pane)) {
             listOfSquares.get(row * nodesInRow + column + 1).addDirection(LEFT);
         }
-        if (checkUpperNeighbour(row, column, group)) {
+        if (checkUpperNeighbour(row, column, pane)) {
             listOfSquares.get((row-1) * nodesInRow + column).addDirection(Direction.DOWN);
         }
-        if (checkLowerNeighbour(row, column, group)) {
+        if (checkLowerNeighbour(row, column, pane)) {
             listOfSquares.get((row+1) * nodesInRow + column).addDirection(UP);
         }
     }
@@ -206,9 +206,9 @@ public class Controller {
      *  @param  row row of selected square
      *  @param column column of selected square
      * */
-    private static boolean checkLeftNeighbour(int row, int column, Group group){
+    private static boolean checkLeftNeighbour(int row, int column, Pane pane){
         try {
-            Paint colourOfSquare = ((Rectangle) group.getChildren().get(row * nodesInRow + column - 1)).getFill();
+            Paint colourOfSquare = ((Rectangle) pane.getChildren().get(row * nodesInRow + column - 1)).getFill();
             if (column-1>=0 && Controller.colorsOfRoads.contains(colourOfSquare)) {
                 return true;
             }
@@ -224,9 +224,9 @@ public class Controller {
      *  @param  row row of selected square
      *  @param column column of selected square
      * */
-    private static boolean checkRightNeighbour(int row, int column, Group group){
+    private static boolean checkRightNeighbour(int row, int column, Pane pane){
         try {
-            Paint colourOfSquare = ((Rectangle)group.getChildren().get(row * nodesInRow + column + 1)).getFill();
+            Paint colourOfSquare = ((Rectangle)pane.getChildren().get(row * nodesInRow + column + 1)).getFill();
             if (column+1<nodesInRow && Controller.colorsOfRoads.contains(colourOfSquare)) {
                 return true;
             }
@@ -242,9 +242,9 @@ public class Controller {
      *  @param  row row of selected square
      *  @param column column of selected square
      * */
-    private static boolean checkLowerNeighbour(int row, int column, Group group){
+    private static boolean checkLowerNeighbour(int row, int column, Pane pane){
         try {
-            Paint colourOfSquare = ((Rectangle) group.getChildren().get((row+1) * nodesInRow + column)).getFill();
+            Paint colourOfSquare = ((Rectangle) pane.getChildren().get((row+1) * nodesInRow + column)).getFill();
             if (row+1>=0 && Controller.colorsOfRoads.contains(colourOfSquare)) {
                 return true;
             }
@@ -259,9 +259,9 @@ public class Controller {
      *  @param  row row of selected square
      *  @param column column of selected square
      * */
-    private static boolean checkUpperNeighbour(int row, int column, Group group){
+    private static boolean checkUpperNeighbour(int row, int column, Pane pane){
         try {
-            Paint colourOfSquare = ((Rectangle) group.getChildren().get((row-1) * nodesInRow + column)).getFill();
+            Paint colourOfSquare = ((Rectangle) pane.getChildren().get((row-1) * nodesInRow + column)).getFill();
             if (row-1< nodesInColumn && Controller.colorsOfRoads.contains(colourOfSquare)) {
                 return true;
             }
@@ -273,19 +273,19 @@ public class Controller {
     }
 
     /** checks number of square placed on selected row and column */
-    private static int numberOfNeighbours(int row, int column, Group group){
+    private static int numberOfNeighbours(int row, int column, Pane pane){
         int numberOfNeighbours = 0;
 //        System.out.println("Coordinates:"+row+", "+column);
-        if(checkLeftNeighbour(row, column, group)){
+        if(checkLeftNeighbour(row, column, pane)){
             numberOfNeighbours++;
         }
-        if(checkRightNeighbour(row, column, group)){
+        if(checkRightNeighbour(row, column, pane)){
             numberOfNeighbours++;
         }
-        if(checkLowerNeighbour(row, column, group)){
+        if(checkLowerNeighbour(row, column, pane)){
             numberOfNeighbours++;
         }
-        if(checkUpperNeighbour(row, column, group)){
+        if(checkUpperNeighbour(row, column, pane)){
             numberOfNeighbours++;
         }
 //        System.out.println("Number of neighbours: "+numberOfNeighbours);
@@ -293,13 +293,13 @@ public class Controller {
     }
 
     /** method that disables choosing square if it has 3 neighbours in the corner */
-    private static boolean disableChoosing(int row, int column, Group group){
+    private static boolean disableChoosing(int row, int column, Pane pane){
 
 //        bottom right column
         try {
-            if (((Rectangle) group.getChildren().get((row + 1) * nodesInRow + column)).getFill() != colorOfFreeField
-                    && ((Rectangle) group.getChildren().get((row + 1) * nodesInRow + column+1)).getFill() != colorOfFreeField
-                    && ((Rectangle) group.getChildren().get((row) * nodesInRow + column+1)).getFill() != colorOfFreeField) {
+            if (((Rectangle) pane.getChildren().get((row + 1) * nodesInRow + column)).getFill() != colorOfFreeField
+                    && ((Rectangle) pane.getChildren().get((row + 1) * nodesInRow + column+1)).getFill() != colorOfFreeField
+                    && ((Rectangle) pane.getChildren().get((row) * nodesInRow + column+1)).getFill() != colorOfFreeField) {
                 return true;
             }
         }
@@ -309,9 +309,9 @@ public class Controller {
 
 //        top left column
         try {
-            if (((Rectangle) group.getChildren().get((row+1) * nodesInRow + column)).getFill() != colorOfFreeField
-                    && ((Rectangle) group.getChildren().get((row) * nodesInRow + column-1)).getFill() != colorOfFreeField
-                    && ((Rectangle) group.getChildren().get((row + 1) * nodesInRow + column-1)).getFill() != colorOfFreeField) {
+            if (((Rectangle) pane.getChildren().get((row+1) * nodesInRow + column)).getFill() != colorOfFreeField
+                    && ((Rectangle) pane.getChildren().get((row) * nodesInRow + column-1)).getFill() != colorOfFreeField
+                    && ((Rectangle) pane.getChildren().get((row + 1) * nodesInRow + column-1)).getFill() != colorOfFreeField) {
                 return true;
             }
         }
@@ -321,9 +321,9 @@ public class Controller {
 
 //        top left corner
         try {
-            if (((Rectangle) group.getChildren().get((row) * nodesInRow + column-1)).getFill() != colorOfFreeField
-                    && ((Rectangle) group.getChildren().get((row-1) * nodesInRow + column)).getFill() != colorOfFreeField
-                    && ((Rectangle) group.getChildren().get((row - 1) * nodesInRow + column-1)).getFill() != colorOfFreeField) {
+            if (((Rectangle) pane.getChildren().get((row) * nodesInRow + column-1)).getFill() != colorOfFreeField
+                    && ((Rectangle) pane.getChildren().get((row-1) * nodesInRow + column)).getFill() != colorOfFreeField
+                    && ((Rectangle) pane.getChildren().get((row - 1) * nodesInRow + column-1)).getFill() != colorOfFreeField) {
                 return true;
             }
         }
@@ -333,9 +333,9 @@ public class Controller {
 
         //        right down corner
         try {
-            if (((Rectangle) group.getChildren().get((row-1) * nodesInRow + column)).getFill() != colorOfFreeField
-                    && ((Rectangle) group.getChildren().get(row * nodesInRow + column+1)).getFill() != colorOfFreeField
-                    && ((Rectangle) group.getChildren().get((row - 1) * nodesInRow + column + 1)).getFill() != colorOfFreeField) {
+            if (((Rectangle) pane.getChildren().get((row-1) * nodesInRow + column)).getFill() != colorOfFreeField
+                    && ((Rectangle) pane.getChildren().get(row * nodesInRow + column+1)).getFill() != colorOfFreeField
+                    && ((Rectangle) pane.getChildren().get((row - 1) * nodesInRow + column + 1)).getFill() != colorOfFreeField) {
                 return true;
             }
         }
@@ -349,7 +349,7 @@ public class Controller {
     /** method that handles events from slider that sets probability of braking
      * @param probability keeps current probability that is on slider
      * @param probabilityOfStopSlider slider that enables to set probability */
-    static void handleProbability(AtomicReference<Double> probability, Slider probabilityOfStopSlider, Group group){
+    static void handleProbability(AtomicReference<Double> probability, Slider probabilityOfStopSlider, Pane pane){
         Label currentProbabilityText = new Label("Current probability: " + probability);
         currentProbabilityText.setTranslateX(150);
         currentProbabilityText.setTranslateY(80);
@@ -361,7 +361,7 @@ public class Controller {
                     currentProbabilityText.setText("Current probability: " + df.format(newValue));
                     probability.set((Double) newValue);
                 });
-        group.getChildren().add(currentProbabilityText);
+        pane.getChildren().add(currentProbabilityText);
     }
 
     /** updates probability variable when submit is clicked

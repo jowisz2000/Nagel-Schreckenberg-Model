@@ -2,12 +2,12 @@ package com.example.implementation;
 
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -23,9 +23,8 @@ public class Application extends javafx.application.Application {
     @Override
     public void start(Stage stage){
 
-        Group group = new Group();
-
-        Scene scene = new Scene(group, 1200, 800);
+        Pane pane = new Pane();
+        Scene scene = new Scene(pane, 1200, 800);
 
         stage.setMaximized(true);
         stage.setTitle("Implementing Nagel–Schreckenberg model");
@@ -35,13 +34,13 @@ public class Application extends javafx.application.Application {
         timeline.play();
 
         ArrayList<Square> listOfSquares = new ArrayList<>();
-        initializeElements(listOfSquares, timeline, group);
-        Controller.onRoadSquareClick(stage, listOfSquares, timeline, group, scene);
+        initializeElements(listOfSquares, timeline, pane);
+        Controller.onRoadSquareClick(stage, listOfSquares, timeline, pane, scene);
     }
 
 
     /** sets up elements on interface */
-    public static void initializeElements(ArrayList<Square> listOfSquares, Timeline timeline, Group group){
+    public static void initializeElements(ArrayList<Square> listOfSquares, Timeline timeline, Pane pane){
 //        all squares are drawn
         for(int j = 0; j < nodesInColumn; j++) {
             for (int i = 0; i < nodesInRow; i++) {
@@ -49,62 +48,62 @@ public class Application extends javafx.application.Application {
                         upperMargin + (1+interval) * sizeOfSquare * j, sizeOfSquare, sizeOfSquare);
                 rectangle.setFill(Color.GREEN);
 
-                Square square = new Square(rectangle, group);
+                Square square = new Square(rectangle, pane);
                 listOfSquares.add(square);
             }
         }
 
-        ((Rectangle) group.getChildren().get(5*nodesInRow)).setFill(Color.RED);
+        ((Rectangle) pane.getChildren().get(5*nodesInRow)).setFill(Color.RED);
 
         Text startPointText = new Text(40, 275, "Start point");
-        group.getChildren().add(startPointText);
+        pane.getChildren().add(startPointText);
 
-        Label currentVelocityText = initializeCurrentVelocityText(group);
-        Label currentDensityText = initializeCurrentDensityText(group);
+        Label currentVelocityText = initializeCurrentVelocityText(pane);
+        Label currentDensityText = initializeCurrentDensityText(pane);
 
-        ChoiceBox<String> determineNumberOfCars = initializeChoiceBox(group);
+        ChoiceBox<String> determineNumberOfCars = initializeChoiceBox(pane);
 
-        setLegendText(group);
+        setLegendText(pane);
 
-        TextField numberOfCars = initializeNumberOfCars(group);
+        TextField numberOfCars = initializeNumberOfCars(pane);
 
-        Slider probabilityOfStopSlider = initializeProbabilitySlider(group);
+        Slider probabilityOfStopSlider = initializeProbabilitySlider(pane);
         AtomicReference<Double> probability = new AtomicReference<>(0.0);
-        Controller.handleProbability(probability, probabilityOfStopSlider, group);
+        Controller.handleProbability(probability, probabilityOfStopSlider, pane);
 
-        TextField timeFrameLength = initializeTimeFrame(group);
+        TextField timeFrameLength = initializeTimeFrame(pane);
 
         boolean[][] isCellOccupied = new boolean[nodesInColumn][nodesInRow];
         ArrayList<Car> carList = new ArrayList<>();
 
-        TextField maxVelocity = initializeMaxVelocity(group);
+        TextField maxVelocity = initializeMaxVelocity(pane);
 
-        ScatterChart<Number, Number> averageVelocityChart = initializeScatterChart(group);
+        ScatterChart<Number, Number> averageVelocityChart = initializeScatterChart(pane);
         XYChart.Series<Number, Number> averageVelocitySeries = initializeVelocitySeries(averageVelocityChart);
 
-        ScatterChart<Number, Number> densityChart = initializeDensityChart(group);
+        ScatterChart<Number, Number> densityChart = initializeDensityChart(pane);
         XYChart.Series<Number, Number> densitySeries = initializeDensitySeries(densityChart);
 
-        Button submitButton = initializeSubmitButton(group);
+        Button submitButton = initializeSubmitButton(pane);
         Controller.onSubmitClick(probability, numberOfCars, listOfSquares, submitButton, timeline, isCellOccupied,
                 carList, timeFrameLength, averageVelocitySeries, densitySeries, currentVelocityText, currentDensityText,
                 determineNumberOfCars, probabilityOfStopSlider, maxVelocity);
 
-        Button resetButton = initializeResetButton(group);
+        Button resetButton = initializeResetButton(pane);
         Controller.onResetClick(resetButton, listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries,
                 densitySeries, numberOfCars, timeFrameLength, probabilityOfStopSlider, maxVelocity);
 
-        Button saveButton = initializeSaveButton(group);
+        Button saveButton = initializeSaveButton(pane);
         Controller.onSaveClick(listOfSquares, saveButton);
 
-        Button loadButton = initializeLoadButton(group);
+        Button loadButton = initializeLoadButton(pane);
         Controller.onLoadClick(loadButton, listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries,
                 densitySeries, numberOfCars, timeFrameLength, probabilityOfStopSlider, maxVelocity);
     }
 
 
     /** method that creates slider that sets probability of braking */
-    private static Slider initializeProbabilitySlider(Group group){
+    private static Slider initializeProbabilitySlider(Pane pane){
         Slider probabilityOfStopSlider = new Slider();
         probabilityOfStopSlider.setMin(0);
         probabilityOfStopSlider.setMax(1);
@@ -114,28 +113,28 @@ public class Application extends javafx.application.Application {
         probabilityOfStopSlider.setMajorTickUnit(0.2);
         probabilityOfStopSlider.setTranslateX(150);
         probabilityOfStopSlider.setTranslateY(40);
-        group.getChildren().add(probabilityOfStopSlider);
+        pane.getChildren().add(probabilityOfStopSlider);
         Text probabilityText = new Text(150, 30, "Set up probability of braking");
-        group.getChildren().add(probabilityText);
+        pane.getChildren().add(probabilityText);
         return probabilityOfStopSlider;
     }
 
     /** methods that creates field to set up number of cars */
-    private static TextField initializeNumberOfCars(Group group){
+    private static TextField initializeNumberOfCars(Pane pane){
         TextField numberOfCars = new TextField();
         numberOfCars.setTranslateX(500);
         numberOfCars.setTranslateY(45);
         numberOfCars.setPrefWidth(120);
-        group.getChildren().add(numberOfCars);
+        pane.getChildren().add(numberOfCars);
         Label l = new Label("Choose option to determine number of cars");
-        group.getChildren().add(l);
+        pane.getChildren().add(l);
         l.setTranslateX(370);
         l.setTranslateY(20);
         return numberOfCars;
     }
 
     /** method that sets up legend */
-    private static void setLegendText(Group group){
+    private static void setLegendText(Pane pane){
         Text legend = new Text("""
                 Legend:
                 Red square: start point,
@@ -144,43 +143,43 @@ public class Application extends javafx.application.Application {
                 Orange: car""");
         legend.setTranslateX(120);
         legend.setTranslateY(630);
-        group.getChildren().add(legend);
+        pane.getChildren().add(legend);
     }
 
     /** method that initializes up legend */
-    private static Button initializeSubmitButton(Group group){
+    private static Button initializeSubmitButton(Pane pane){
         Button submitButton = new Button();
         submitButton.setText("Start/pause animation");
         submitButton.setTranslateX(290);
         submitButton.setTranslateY(620);
         submitButton.setPrefWidth(140);
-        group.getChildren().add(submitButton);
+        pane.getChildren().add(submitButton);
         return submitButton;
     }
 
-    private static Button initializeResetButton(Group group){
+    private static Button initializeResetButton(Pane pane){
         Button resetButton = new Button();
         resetButton.setText("Reset map");
         resetButton.setTranslateX(290);
         resetButton.setTranslateY(650);
         resetButton.setPrefWidth(140);
-        group.getChildren().add(resetButton);
+        pane.getChildren().add(resetButton);
         return resetButton;
     }
-    private static TextField initializeTimeFrame(Group group){
+    private static TextField initializeTimeFrame(Pane pane){
         TextField timeFrame = new TextField();
         timeFrame.setTranslateX(650);
         timeFrame.setTranslateY(45);
         timeFrame.setPrefWidth(120);
-        group.getChildren().add(timeFrame);
+        pane.getChildren().add(timeFrame);
         Text numberOfCarsText = new Text("Set up time of one iteration");
         numberOfCarsText.setTranslateX(640);
         numberOfCarsText.setTranslateY(35);
-        group.getChildren().add(numberOfCarsText);
+        pane.getChildren().add(numberOfCarsText);
         return timeFrame;
     }
 
-    public static ScatterChart<Number, Number> initializeScatterChart(Group group) {
+    public static ScatterChart<Number, Number> initializeScatterChart(Pane pane) {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
         yAxis.setLabel("Average velocity");
@@ -194,7 +193,7 @@ public class Application extends javafx.application.Application {
         scatterChart.setAnimated(false);
         scatterChart.setPrefWidth(500);
         scatterChart.setPrefHeight(250);
-        group.getChildren().add(scatterChart);
+        pane.getChildren().add(scatterChart);
         return scatterChart;
     }
 
@@ -206,7 +205,7 @@ public class Application extends javafx.application.Application {
         return series;
     }
 
-    public static ScatterChart<Number, Number> initializeDensityChart(Group group) {
+    public static ScatterChart<Number, Number> initializeDensityChart(Pane pane) {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
         yAxis.setLabel("Density");
@@ -220,7 +219,7 @@ public class Application extends javafx.application.Application {
         scatterChart.setAnimated(false);
         scatterChart.setPrefWidth(500);
         scatterChart.setPrefHeight(250);
-        group.getChildren().add(scatterChart);
+        pane.getChildren().add(scatterChart);
         return scatterChart;
     }
 
@@ -232,64 +231,64 @@ public class Application extends javafx.application.Application {
         return series;
     }
 
-    private static Label initializeCurrentVelocityText(Group group){
+    private static Label initializeCurrentVelocityText(Pane pane){
         Label currentVelocityText = new Label("Current velocity: 0.0");
         currentVelocityText.setTranslateX(950);
         currentVelocityText.setTranslateY(80);
-        group.getChildren().add(currentVelocityText);
+        pane.getChildren().add(currentVelocityText);
         return currentVelocityText;
     }
 
-    private static Label initializeCurrentDensityText(Group group){
+    private static Label initializeCurrentDensityText(Pane pane){
         Label currentDensityText = new Label("Current density: 0.0");
         currentDensityText.setTranslateX(950);
         currentDensityText.setTranslateY(380);
-        group.getChildren().add(currentDensityText);
+        pane.getChildren().add(currentDensityText);
         return currentDensityText;
     }
 
-    private static Button initializeSaveButton(Group group){
+    private static Button initializeSaveButton(Pane pane){
         Button saveButton = new Button();
         saveButton.setText("Save map to file");
         saveButton.setTranslateX(460);
         saveButton.setTranslateY(620);
         saveButton.setPrefWidth(140);
-        group.getChildren().add(saveButton);
+        pane.getChildren().add(saveButton);
         return saveButton;
     }
 
-    private static Button initializeLoadButton(Group group){
+    private static Button initializeLoadButton(Pane pane){
         Button loadButton = new Button();
         loadButton.setText("Load map from file");
         loadButton.setTranslateX(460);
         loadButton.setTranslateY(650);
         loadButton.setPrefWidth(140);
-        group.getChildren().add(loadButton);
+        pane.getChildren().add(loadButton);
         return loadButton;
     }
 
-    private static ChoiceBox<String> initializeChoiceBox(Group group){
+    private static ChoiceBox<String> initializeChoiceBox(Pane pane){
         ArrayList<String> options = new ArrayList<>();
         options.add("Number of cars");
         options.add("Density");
         ChoiceBox<String> choiceBox = new ChoiceBox<>(FXCollections.observableArrayList(options));
-        group.getChildren().add(choiceBox);
+        pane.getChildren().add(choiceBox);
         choiceBox.setTranslateX(370);
         choiceBox.setTranslateY(45);
         choiceBox.setValue("Number of cars");
         return choiceBox;
     }
 
-    private static TextField initializeMaxVelocity(Group group) {
+    private static TextField initializeMaxVelocity(Pane pane) {
         TextField maxVelocity = new TextField();
         maxVelocity.setTranslateX(820);
         maxVelocity.setTranslateY(45);
         maxVelocity.setPrefWidth(120);
-        group.getChildren().add(maxVelocity);
+        pane.getChildren().add(maxVelocity);
         Text maxVelocityText = new Text("Set up maximum velocity");
         maxVelocityText.setTranslateX(820);
         maxVelocityText.setTranslateY(35);
-        group.getChildren().add(maxVelocityText);
+        pane.getChildren().add(maxVelocityText);
         return maxVelocity;
     }
 

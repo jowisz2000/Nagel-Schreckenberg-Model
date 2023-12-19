@@ -1,6 +1,6 @@
 package com.example.implementation;
 
-import javafx.scene.Group;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import java.util.HashSet;
@@ -24,10 +24,10 @@ public class Square{
 
     public void resetDirection() { possibleDirections.clear(); }
 
-    public Square(Rectangle rectangle, Group group) {
+    public Square(Rectangle rectangle, Pane pane) {
         this.rectangle = rectangle;
         this.rectangle.setFill(Color.GREEN);
-        group.getChildren().add(rectangle);
+        pane.getChildren().add(rectangle);
         this.possibleDirections = new HashSet<>();
     }
 
