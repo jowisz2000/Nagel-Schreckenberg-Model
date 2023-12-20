@@ -5,24 +5,18 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Scene;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
-import javafx.scene.effect.Light;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.robot.Robot;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.awt.geom.Point2D;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -30,6 +24,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+
 import static com.example.implementation.Direction.*;
 import static com.example.implementation.Variables.*;
 
@@ -39,12 +34,9 @@ public class Controller {
 
     private static final Paint colorOfFreeField = Color.GREEN;
     /**
-     * Event handler that checks if user clicked on square and then colours selected square
-     * @param stage on which squares are placed
-     * */
+     * Event handler that checks if user clicked on square and then colours selected square  */
 
-    static void onRoadSquareClick(Stage stage, ArrayList<Square> listOfSquares, Timeline timeline, Pane pane, Scene scene) {
-        Robot robot = new Robot();
+    static void onRoadSquareClick(ArrayList<Square> listOfSquares, Timeline timeline, Pane pane) {
         pane.addEventFilter(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
             double xWithoutMargin = mouseEvent.getX() - leftMargin;
             double yWithoutMargin = mouseEvent.getY() - upperMargin;

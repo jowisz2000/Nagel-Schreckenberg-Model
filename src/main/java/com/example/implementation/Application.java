@@ -35,7 +35,7 @@ public class Application extends javafx.application.Application {
 
         ArrayList<Square> listOfSquares = new ArrayList<>();
         initializeElements(listOfSquares, timeline, pane);
-        Controller.onRoadSquareClick(stage, listOfSquares, timeline, pane, scene);
+        Controller.onRoadSquareClick(listOfSquares, timeline, pane);
     }
 
 
