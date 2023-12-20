@@ -168,12 +168,12 @@ public class Application extends javafx.application.Application {
     }
     private static TextField initializeTimeFrame(Pane pane){
         TextField timeFrame = new TextField();
-        timeFrame.setTranslateX(650);
+        timeFrame.setTranslateX(680);
         timeFrame.setTranslateY(45);
         timeFrame.setPrefWidth(120);
         pane.getChildren().add(timeFrame);
         Text numberOfCarsText = new Text("Set up time of one iteration");
-        numberOfCarsText.setTranslateX(640);
+        numberOfCarsText.setTranslateX(660);
         numberOfCarsText.setTranslateY(35);
         pane.getChildren().add(numberOfCarsText);
         return timeFrame;
@@ -273,7 +273,7 @@ public class Application extends javafx.application.Application {
         options.add("Density");
         ChoiceBox<String> choiceBox = new ChoiceBox<>(FXCollections.observableArrayList(options));
         pane.getChildren().add(choiceBox);
-        choiceBox.setTranslateX(370);
+        choiceBox.setTranslateX(350);
         choiceBox.setTranslateY(45);
         choiceBox.setValue("Number of cars");
         return choiceBox;
@@ -281,12 +281,12 @@ public class Application extends javafx.application.Application {
 
     private static TextField initializeMaxVelocity(Pane pane) {
         TextField maxVelocity = new TextField();
-        maxVelocity.setTranslateX(820);
+        maxVelocity.setTranslateX(860);
         maxVelocity.setTranslateY(45);
         maxVelocity.setPrefWidth(120);
         pane.getChildren().add(maxVelocity);
         Text maxVelocityText = new Text("Set up maximum velocity");
-        maxVelocityText.setTranslateX(820);
+        maxVelocityText.setTranslateX(860);
         maxVelocityText.setTranslateY(35);
         pane.getChildren().add(maxVelocityText);
         return maxVelocity;
