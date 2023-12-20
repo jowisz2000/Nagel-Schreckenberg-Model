@@ -9,17 +9,20 @@ import javafx.scene.Scene;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
+import javafx.scene.effect.Light;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.robot.Robot;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.awt.geom.Point2D;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -40,12 +43,12 @@ public class Controller {
      * @param stage on which squares are placed
      * */
 
-    static void onRoadSquareClick(Stage stage, ArrayList<Square> listOfSquares, Timeline timeline, Pane paneoup, Scene scene) {
+    static void onRoadSquareClick(Stage stage, ArrayList<Square> listOfSquares, Timeline timeline, Pane pane, Scene scene) {
         Robot robot = new Robot();
-        scene.addEventFilter(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
-//            created coordinates that don't depend if application is on full screen or not
-            double xWithoutMargin = robot.getMouseX() - leftMargin - stage.getX();
-            double yWithoutMargin = robot.getMouseY() - upperMargin - 24 - stage.getY();
+        pane.addEventFilter(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
+            double xWithoutMargin = mouseEvent.getX() - leftMargin;
+            double yWithoutMargin = mouseEvent.getY() - upperMargin;
+            System.out.println(xWithoutMargin+", "+yWithoutMargin);
 
             double column = xWithoutMargin / (sizeOfSquare*(1+interval));
             double row = yWithoutMargin / (sizeOfSquare*(1+interval));
@@ -53,7 +56,7 @@ public class Controller {
             try {
 
 //                if we click on road then possible directions for this part of road is shown
-                if (((Rectangle) paneoup.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != colorOfFreeField) {
+                if (((Rectangle) pane.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != colorOfFreeField) {
                     ArrayList<Direction> possibleDirections = new ArrayList<>(listOfSquares.get((int)row*nodesInRow+(int)column).getPossibleDirections());
                     StringBuilder stringBuilder = new StringBuilder();
                     for (Direction current : possibleDirections) {
@@ -98,14 +101,14 @@ public class Controller {
                 return;
             }
 
-            if(numberOfNeighbours((int)row, (int)column, paneoup) == 0){
+            if(numberOfNeighbours((int)row, (int)column, pane) == 0){
                 Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
                 noNeighboursAlert.setContentText("This cell has no neighbours! Please select one with neighbours.");
                 noNeighboursAlert.show();
                 return;
             }
 
-            if(disableChoosing((int)row, (int)column, paneoup)){
+            if(disableChoosing((int)row, (int)column, pane)){
                 Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
                 noNeighboursAlert.setContentText("It is impossible to put road in this square");
                 noNeighboursAlert.show();
@@ -114,8 +117,8 @@ public class Controller {
 
 //            if user clicked the square then the square is coloured
             if(row % 1 < 1/(1+interval) && column % 1 < 1/(1+interval)){
-                ((Rectangle) paneoup.getChildren().get(nodesInRow*(int)row+(int)column)).setFill(Color.BLACK);
-                setDirection(listOfSquares, (int)row, (int)column, paneoup);
+                ((Rectangle) pane.getChildren().get(nodesInRow*(int)row+(int)column)).setFill(Color.BLACK);
+                setDirection(listOfSquares, (int)row, (int)column, pane);
             }
         });
     }
