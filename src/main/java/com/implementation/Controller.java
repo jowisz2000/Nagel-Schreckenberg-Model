@@ -1,4 +1,4 @@
-package com.example.implementation;
+package com.implementation;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -25,8 +25,8 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.example.implementation.Direction.*;
-import static com.example.implementation.Variables.*;
+import static com.implementation.Direction.*;
+import static com.implementation.Variables.*;
 
 public class Controller {
 
@@ -387,7 +387,7 @@ public class Controller {
             if(determineNumberOfCars.getValue().equals("Number of cars")) {
                 if (!numberOfCars.getText().matches("\\d+")) {
                     Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
-                    invalidNumberAlert.setContentText("It must be a natural number!");
+                    invalidNumberAlert.setContentText("Number of cars has to be natural!");
                     invalidNumberAlert.show();
                     return;
                 }
@@ -396,7 +396,7 @@ public class Controller {
             else{
                 if (!numberOfCars.getText().matches("^(0(?:\\.\\d+)?|1(?:\\.0+)?)$")) {
                     Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
-                    invalidNumberAlert.setContentText("It must be a number from 0 to 1!");
+                    invalidNumberAlert.setContentText("Density has to be a number from 0 to 1!");
                     invalidNumberAlert.show();
                     return;
                 }
@@ -405,15 +405,16 @@ public class Controller {
 
             if(!frameLength.getText().matches("\\d*\\.?\\d+")){
                 Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
-                invalidNumberAlert.setContentText("It must be a positive number!");
+                invalidNumberAlert.setContentText("Time of iteration has to be a positive number!");
                 invalidNumberAlert.show();
                 return;
             }
 
             if (!maxVelocity.getText().matches("\\d+")) {
                 Alert invalidNumberAlert = new Alert(Alert.AlertType.ERROR);
-                invalidNumberAlert.setContentText("It must be a natural number!");
+                invalidNumberAlert.setContentText("Maximum velocity has to be a natural number!");
                 invalidNumberAlert.show();
+                return;
             }
 
             numberOfCars.setDisable(true);
@@ -454,6 +455,10 @@ public class Controller {
         AtomicReference<Double> summedVelocity = new AtomicReference<>(0.0);
         AtomicReference<Integer> currentIteration = new AtomicReference<>(1);
         double frameLength = Double.parseDouble(frameLengthText.getText());
+
+        if(probability.get() == 1){
+            return;
+        }
 
         for(Car currentCar: carList){
 

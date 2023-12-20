@@ -1,4 +1,4 @@
-package com.example.implementation;
+package com.implementation;
 
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
@@ -16,7 +16,7 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.example.implementation.Variables.*;
+import static com.implementation.Variables.*;
 
 public class Application extends javafx.application.Application {
 
@@ -54,9 +54,6 @@ public class Application extends javafx.application.Application {
         }
 
         ((Rectangle) pane.getChildren().get(5*nodesInRow)).setFill(Color.RED);
-
-        Text startPointText = new Text(40, 275, "Start point");
-        pane.getChildren().add(startPointText);
 
         Label currentVelocityText = initializeCurrentVelocityText(pane);
         Label currentDensityText = initializeCurrentDensityText(pane);
@@ -125,6 +122,7 @@ public class Application extends javafx.application.Application {
         numberOfCars.setTranslateX(500);
         numberOfCars.setTranslateY(45);
         numberOfCars.setPrefWidth(120);
+        numberOfCars.setText("5");
         pane.getChildren().add(numberOfCars);
         Label l = new Label("Choose option to determine number of cars");
         pane.getChildren().add(l);
@@ -171,11 +169,12 @@ public class Application extends javafx.application.Application {
         timeFrame.setTranslateX(680);
         timeFrame.setTranslateY(45);
         timeFrame.setPrefWidth(120);
+        timeFrame.setText("1");
         pane.getChildren().add(timeFrame);
-        Text numberOfCarsText = new Text("Set up time of one iteration");
-        numberOfCarsText.setTranslateX(660);
-        numberOfCarsText.setTranslateY(35);
-        pane.getChildren().add(numberOfCarsText);
+        Text iterationText = new Text("time of one iteration [s]");
+        iterationText.setTranslateX(675);
+        iterationText.setTranslateY(35);
+        pane.getChildren().add(iterationText);
         return timeFrame;
     }
 
@@ -284,6 +283,7 @@ public class Application extends javafx.application.Application {
         maxVelocity.setTranslateX(860);
         maxVelocity.setTranslateY(45);
         maxVelocity.setPrefWidth(120);
+        maxVelocity.setText("5");
         pane.getChildren().add(maxVelocity);
         Text maxVelocityText = new Text("Set up maximum velocity");
         maxVelocityText.setTranslateX(860);

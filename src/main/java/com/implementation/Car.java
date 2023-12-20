@@ -1,9 +1,9 @@
-package com.example.implementation;
+package com.implementation;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import static com.example.implementation.Variables.nodesInRow;
+import static com.implementation.Variables.nodesInRow;
 
 public class Car {
     private int x;
