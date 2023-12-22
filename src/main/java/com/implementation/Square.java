@@ -10,6 +10,13 @@ public class Square{
     private final Rectangle rectangle;
     private HashSet<Direction> possibleDirections;
 
+    public Square(Rectangle rectangle, Pane pane) {
+        this.rectangle = rectangle;
+        this.rectangle.setFill(Color.GREEN);
+        pane.getChildren().add(rectangle);
+        this.possibleDirections = new HashSet<>();
+    }
+
     public HashSet<Direction> getPossibleDirections() {
         return possibleDirections;
     }
@@ -23,13 +30,6 @@ public class Square{
     }
 
     public void resetDirection() { possibleDirections.clear(); }
-
-    public Square(Rectangle rectangle, Pane pane) {
-        this.rectangle = rectangle;
-        this.rectangle.setFill(Color.GREEN);
-        pane.getChildren().add(rectangle);
-        this.possibleDirections = new HashSet<>();
-    }
 
     public Color getColor() {
         return (Color) rectangle.getFill();
