@@ -40,45 +40,11 @@ public class Controller {
         pane.addEventFilter(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
             double xWithoutMargin = mouseEvent.getX() - leftMargin;
             double yWithoutMargin = mouseEvent.getY() - upperMargin;
-            System.out.println(xWithoutMargin+", "+yWithoutMargin);
 
             double column = xWithoutMargin / (sizeOfSquare*(1+interval));
             double row = yWithoutMargin / (sizeOfSquare*(1+interval));
 
-            try {
-
-//                if we click on road then possible directions for this part of road is shown
-                if (((Rectangle) pane.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != colorOfFreeField) {
-                    ArrayList<Direction> possibleDirections = new ArrayList<>(listOfSquares.get((int)row*nodesInRow+(int)column).getPossibleDirections());
-                    StringBuilder stringBuilder = new StringBuilder();
-                    for (Direction current : possibleDirections) {
-                        stringBuilder.append(current).append("\n");
-                    }
-                    String allDirectionsText = stringBuilder.toString().trim();
-
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Possible directions for this cell");
-                    alert.setHeaderText(null);
-                    TextArea textArea;
-                    if (listOfSquares.get((int) row * nodesInRow + (int) column).getPossibleDirections().isEmpty()) {
-                        textArea = new TextArea("This cell is a dead end");
-                    } else {
-                        textArea = new TextArea(allDirectionsText);
-                    }
-
-                    textArea.setEditable(false);
-                    GridPane gridPane = new GridPane();
-                    gridPane.add(textArea, 0, 0);
-                    alert.getDialogPane().setContent(gridPane);
-                    alert.getDialogPane().setMaxWidth(250);
-                    alert.getDialogPane().setMaxHeight(140);
-                    alert.showAndWait();
-                    return;
-                }
-            }
-            catch(IndexOutOfBoundsException ignored){}
-
-//            it doesn't allow to colour squares when user clicks over or under squares
+            //            it doesn't allow to colour squares when user clicks over or under squares
             if(row <0 || column <0 || row>nodesInColumn || column>nodesInRow){
                 return;
             }
@@ -104,6 +70,34 @@ public class Controller {
                 Alert noNeighboursAlert = new Alert(Alert.AlertType.ERROR);
                 noNeighboursAlert.setContentText("It is impossible to put road in this square");
                 noNeighboursAlert.show();
+                return;
+            }
+
+            if (((Rectangle) pane.getChildren().get(nodesInRow * (int) row + (int) column)).getFill() != colorOfFreeField) {
+                ArrayList<Direction> possibleDirections = new ArrayList<>(listOfSquares.get((int)row*nodesInRow+(int)column).getPossibleDirections());
+                StringBuilder stringBuilder = new StringBuilder();
+                for (Direction current : possibleDirections) {
+                    stringBuilder.append(current).append("\n");
+                }
+                String allDirectionsText = stringBuilder.toString().trim();
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Possible directions for this cell");
+                alert.setHeaderText(null);
+                TextArea textArea;
+                if (listOfSquares.get((int) row * nodesInRow + (int) column).getPossibleDirections().isEmpty()) {
+                    textArea = new TextArea("This cell is a dead end");
+                } else {
+                    textArea = new TextArea(allDirectionsText);
+                }
+
+                textArea.setEditable(false);
+                GridPane gridPane = new GridPane();
+                gridPane.add(textArea, 0, 0);
+                alert.getDialogPane().setContent(gridPane);
+                alert.getDialogPane().setMaxWidth(250);
+                alert.getDialogPane().setMaxHeight(140);
+                alert.showAndWait();
                 return;
             }
 
@@ -728,7 +722,10 @@ public class Controller {
         loadButton.setOnAction(event);
     }
 
-    private static void resetGUI(ArrayList<Square> listOfSquares, Timeline timeline, boolean[][] isCellOccupied, ArrayList<Car> carList, XYChart.Series<Number, Number> averageVelocitySeries, XYChart.Series<Number, Number> densitySeries, TextField numberOfCars, TextField frameLength, Slider probabilityOfStopSlider, TextField maxVelocity) {
+    private static void resetGUI(ArrayList<Square> listOfSquares, Timeline timeline, boolean[][] isCellOccupied,
+                                 ArrayList<Car> carList, XYChart.Series<Number, Number> averageVelocitySeries,
+                                 XYChart.Series<Number, Number> densitySeries, TextField numberOfCars,
+                                 TextField frameLength, Slider probabilityOfStopSlider, TextField maxVelocity) {
         averageVelocitySeries.getData().clear();
         densitySeries.getData().clear();
         timeline.stop();
