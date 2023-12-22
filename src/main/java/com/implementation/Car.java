@@ -45,7 +45,7 @@ public class Car {
         List<Direction> convertedDirections = new ArrayList<>(possibleDirections);
         Random random = new Random();
         try {
-            this.direction = convertedDirections.get(random.nextInt(1000) % convertedDirections.size());
+            this.direction = convertedDirections.get(random.nextInt(1000000) % convertedDirections.size());
         }
         catch(ArithmeticException | NullPointerException e){
             this.direction = null;
