@@ -10,7 +10,6 @@ public class Car {
     private int y;
     private Direction direction;
     private int velocity;
-
     private boolean isMoving;
 
     Car(int x, int y, int velocity){
