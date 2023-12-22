@@ -35,7 +35,6 @@ public class Application extends javafx.application.Application {
 
         ArrayList<Square> listOfSquares = new ArrayList<>();
         initializeElements(listOfSquares, timeline, pane);
-        Controller.onRoadSquareClick(listOfSquares, timeline, pane);
     }
 
 
@@ -96,6 +95,8 @@ public class Application extends javafx.application.Application {
         Button loadButton = initializeLoadButton(pane);
         Controller.onLoadClick(loadButton, listOfSquares, timeline, isCellOccupied, carList, averageVelocitySeries,
                 densitySeries, numberOfCars, timeFrameLength, probabilityOfStopSlider, maxVelocity);
+
+        Controller.onRoadSquareClick(listOfSquares, timeline, pane);
     }
 
 
